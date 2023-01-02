@@ -38,6 +38,7 @@ namespace Signals
             Gain = 255;// 7500000.0f;
             _filePath = @"C:\Users\Home\Documents\Audacity\codexparts\guardian_obelisk_08.flac";
             _process = new ProcessImage(_filePath);
+            _process.NormaliseArray(StartOverlayIndex, OverlayAboveSement);
             Draw();
 
             DataContext = this;
@@ -47,7 +48,7 @@ namespace Signals
         public void Draw()
         {
             Bitmap bitmap = new Bitmap(4096, 2048);
-            _process.NormaliseArray(StartOverlayIndex, OverlayAboveSement);
+            
             for (int x = 0; x < 4096 && x < _process.Buffer.Count; x++)
             {
                 var buffer = _process.Buffer[x];
@@ -75,28 +76,37 @@ namespace Signals
                                 0));
 
                     float powerInverse = 0;
-                    float powerBlue = 0;
+                    int red = 0;
+                    int blue = 0;
+                    int green = 0;
                     //for (int y = 0; y < 12; y++)
                     
                     var value = buffer[i].X;
-                    if (value > 0)
-                    {
+                    
                         powerInverse += Math.Abs(value);
-                    }
-                    else
-                    {
-                        powerBlue += Math.Abs(value);
-                    }
+                   
 
+                    //if (powerInverse < 0.5)
+                    {
+                        blue = Convert.ToInt32(Math.Min(255.0f, Gain * powerInverse));
+                    }
+                    //if (powerInverse >= 0.5f && powerInverse < 0.75f)
+                    {
+                        green = Convert.ToInt32(Math.Min(255.0f, Gain * powerInverse));
+                    }
+                    //if (powerInverse > 0.75f)
+                    {
+                        red = Convert.ToInt32(Math.Min(255.0f, Gain * powerInverse));
+                    }
                     if (i > OverlayAboveSement)
                     {
                         powerInverse *= HighRangeBoost;
                     }
 
                     bitmap.SetPixel(x, 1023-i, System.Drawing.Color.FromArgb(255,
-                                Convert.ToInt32(Math.Min(255.0f, Gain * powerInverse)),
-                                Convert.ToInt32(Math.Min(255.0f, Gain * powerInverse)),
-                                Convert.ToInt32(Math.Min(255.0f, Gain * powerInverse))));
+                                red,
+                                green,
+                                blue));
 
                 }
             }
@@ -154,6 +164,7 @@ namespace Signals
                 try
                 {
                     _process = new ProcessImage(fileName);
+                    _process.NormaliseArray(StartOverlayIndex, OverlayAboveSement);
                     Draw();
                 }
                 catch

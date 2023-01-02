@@ -38,16 +38,22 @@ namespace Signals
                     Complex[] complex = new Complex[_fftLength];
                     for (int i = 0; i < _fftLength ; i++)
                     {
-                        int step = i;
+                        float reading = 0;
                         if (format.Channels == 2)
                         {
-                        //todo add config for this to select channel
-                            step = i * format.Channels + 1;
+                            //todo add config for this to select channel
+                            
+                            reading = BitConverter.ToSingle(buffer, (i * 2 )* _bytesPerSameple);
+                            reading += BitConverter.ToSingle(buffer, (i * 2 +1) * _bytesPerSameple);
                         }
-                            complex[i] = new Complex
+                        else
+                        {
+                            reading = BitConverter.ToSingle(buffer, i * _bytesPerSameple);
+                        }
+                         complex[i] = new Complex
                         {
                            
-                            X = Convert.ToSingle(BitConverter.ToSingle(buffer, step * _bytesPerSameple) * FastFourierTransform.HammingWindow(i, _fftLength)),
+                            X = Convert.ToSingle(reading * FastFourierTransform.HammingWindow(i, _fftLength)),
                             Y = 0
 
                         };
@@ -90,6 +96,7 @@ namespace Signals
 
         public void NormaliseArray(int lowerCutoff, int divider)
         {
+           // NormaliseArrayRange(0, lowerCutoff, 0.009f);
             NormaliseArrayRange(lowerCutoff, divider, 0.009f);
             NormaliseArrayRange(divider, _fftLength/2, 0.03f);
             foreach (var buffer in _fftBuffer)
@@ -133,23 +140,25 @@ namespace Signals
                     float value = buffer[i].X;
                     if (value< 0)
                     {
-                        value /= min;
+                        value =  (value/ min)  ;
                     }
                     else
                     {
-                        value /= max;
-                    }
-                    if (value > cutoff)
-                    {
-                        value *= .75f;
-                        value = value + 0.25f;
+                        value =  (value / max );
                     }
 
-                    if (value < -cutoff)
-                    {
-                        value *= .75f;
-                        value = value - 0.25f;
-                    }
+                   
+                    //if (value > cutoff)
+                    //{
+                    //    value *= .75f;
+                    //    value = value + 0.25f;
+                    //}
+
+                    //if (value < -cutoff)
+                    //{
+                    //    value *= .75f;
+                    //    value = value - 0.25f;
+                    //}
 
                     buffer[i].X = value;
                 }
