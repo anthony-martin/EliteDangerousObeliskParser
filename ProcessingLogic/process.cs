@@ -4,6 +4,7 @@ using NAudio.Flac;
 using NAudio.Wave;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading;
 
@@ -11,13 +12,13 @@ namespace Signals
 {
     public class ProcessImage
     {
-        private List<Complex[]> _fftBuffer;
+        private List<float[]> _fftBuffer;
         private int _fftLength = 2048;
         private int _fftLengthBytes ;
         private int _bytesPerSameple;
         public ProcessImage(string filename)
         {
-            _fftBuffer = new List<Complex[]>();
+            _fftBuffer = new List<float[]>();
 
             using (var audioFile = new AudioFileReader(filename))
             {
@@ -28,7 +29,7 @@ namespace Signals
                 _fftLength = 2048;
                 //here we double the buffer for stereo as we are going to skip half the data
                 _fftLengthBytes = _fftLength * _bytesPerSameple * format.Channels;
-                int readSegment = Math.Min(_fftLengthBytes, bytesPerSecond * format.Channels / 50);
+                int readSegment = Math.Min(_fftLengthBytes, bytesPerSecond * format.Channels / 1000);
                 
 
                 var buffer = new byte[_fftLengthBytes];
@@ -62,7 +63,12 @@ namespace Signals
 
 
                     FastFourierTransform.FFT(true, 11, complex);
-                    _fftBuffer.Add(complex);
+                    var array = new float[_fftLength/2];
+                    for (int i = 0; i < _fftLength / 2; i++)
+                    {
+                        array[i] = complex[i].X;
+                    }
+                    _fftBuffer.Add(array);
                     var readBuffer = new byte[readSegment];
 
                     read = audioFile.Read(readBuffer, 0, readSegment);
@@ -86,12 +92,7 @@ namespace Signals
                 //    }
                 //}
             }
-            //FlacReader reader = new FlacReader(@"C:\Users\Home\Documents\Audacity\codexparts\guardian_obelisk_08.flac");
-            //FlacFrame frame = FlacFrame.FromStream(reader);
-            //var sampleSize = frame.Header.BitsPerSample;
-            //var buffer = new float[2048];
-            //reader.Read(buffer, 0, 2048);
-            //Complex num = new Complex();
+
         }
 
         public void NormaliseArray(int lowerCutoff, int divider)
@@ -103,7 +104,7 @@ namespace Signals
             {
                 for (int i = 0; i < lowerCutoff; i++)
                 {
-                    buffer[i].X = 0;
+                    buffer[i] = 0;
                 }
             }
         }
@@ -117,7 +118,7 @@ namespace Signals
             {
                 for (int i = bottom; i < top; i++)
                 {
-                    float value = buffer[i].X;
+                    float value = buffer[i];
                     if (value < min)
                     {
                         min = value;
@@ -137,7 +138,7 @@ namespace Signals
 
                 for (int i = bottom; i < top; i++)
                 {
-                    float value = buffer[i].X;
+                    float value = buffer[i];
                     if (value< 0)
                     {
                         value =  (value/ min)  ;
@@ -160,12 +161,12 @@ namespace Signals
                     //    value = value - 0.25f;
                     //}
 
-                    buffer[i].X = value;
+                    buffer[i] = value;
                 }
             }
         }
 
-        public List<Complex[]> Buffer
+        public List<float[]> Buffer
         {
             get { return _fftBuffer; }
         }

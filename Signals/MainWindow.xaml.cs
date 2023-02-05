@@ -1,4 +1,5 @@
 ﻿using Microsoft.Win32;
+using ProcessingLogic;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -29,13 +30,14 @@ namespace Signals
         private ProcessImage _process;
 
         public event PropertyChangedEventHandler PropertyChanged;
-
+        private int _bitmapWidth = 4096;
+        private int _bitmapHeight = 1024;
         public MainWindow()
         {
             HighRangeBoost = 1;
             OverlayAboveSement = 660;
             StartOverlayIndex = 191;
-            Gain = 255;// 7500000.0f;
+            Gain = 2500;// 7500000.0f;
             _filePath = @"C:\Users\Home\Documents\Audacity\codexparts\guardian_obelisk_08.flac";
             _process = new ProcessImage(_filePath);
             _process.NormaliseArray(StartOverlayIndex, OverlayAboveSement);
@@ -47,44 +49,57 @@ namespace Signals
 
         public void Draw()
         {
-            Bitmap bitmap = new Bitmap(4096, 2048);
-            
-            for (int x = 0; x < 4096 && x < _process.Buffer.Count; x++)
+            Bitmap bitmap = new Bitmap(_bitmapWidth, _bitmapHeight);
+            int block = 1;
+            if (_process.Buffer.Count / _bitmapWidth > 1)
             {
-                var buffer = _process.Buffer[x];
-                for (int i = 0; i < 1024; i++)
+                block = _process.Buffer.Count / _bitmapWidth;
+            }
+            for (int x = 0; x < _bitmapWidth && x* block < _process.Buffer.Count; x++)
+            {
+                // here we add all the blocks together
+                float[] buffer = new float[_bitmapHeight];
+                for (int y = 0; y < block; y++)
                 {
-                    float power = 0;
-
-                    float power2 = 0;
-                    if (i >= StartOverlayIndex && OverlayAboveSement - StartOverlayIndex + i < 1024)
+                    var blockSegment = _process.Buffer[x*block+y];
+                    for (int z = 0; z < _bitmapHeight; z++)
                     {
-                        //we want to start reading up from overlay above
-                        //this should be = to overlayAboveSegment when it starts and not overflow
-                        power2 += HighRangeBoost * Math.Abs(buffer[ i - StartOverlayIndex + OverlayAboveSement].X);
+                        buffer[z] += blockSegment[z]/ (float)block;
                     }
+                }
+                for (int i = 0; i < _bitmapHeight; i++)
+                {
+                    //float power = 0;
 
-                    {
-                        power += Math.Abs(buffer[i].X);
+                    //float power2 = 0;
+                    //if (i >= StartOverlayIndex && OverlayAboveSement - StartOverlayIndex + i < 1024)
+                    //{
+                    //    //we want to start reading up from overlay above
+                    //    //this should be = to overlayAboveSegment when it starts and not overflow
+                    //    power2 += HighRangeBoost * Math.Abs(buffer[ i - StartOverlayIndex + OverlayAboveSement]);
+                    //}
 
-                    }
+                    //{
+                    //    power += Math.Abs(buffer[i]);
+
+                    //}
 
 
-                    bitmap.SetPixel(x, 2047 - i, System.Drawing.Color.FromArgb(255,
-                                Convert.ToInt32(Math.Min(255.0f, Gain * power)),
-                                Convert.ToInt32(Math.Min(255.0f, Gain * power2)),
-                                0));
+                    //bitmap.SetPixel(x, 2047 - i, System.Drawing.Color.FromArgb(255,
+                    //            Convert.ToInt32(Math.Min(255.0f, Gain * power)),
+                    //            Convert.ToInt32(Math.Min(255.0f, Gain * power2)),
+                    //            0));
 
                     float powerInverse = 0;
                     int red = 0;
                     int blue = 0;
                     int green = 0;
                     //for (int y = 0; y < 12; y++)
-                    
-                    var value = buffer[i].X;
-                    
-                        powerInverse += Math.Abs(value);
-                   
+
+                    var value = buffer[i];
+
+                    powerInverse += Math.Abs(value);
+
 
                     //if (powerInverse < 0.5)
                     {
@@ -103,16 +118,19 @@ namespace Signals
                         powerInverse *= HighRangeBoost;
                     }
 
-                    bitmap.SetPixel(x, 1023-i, System.Drawing.Color.FromArgb(255,
+                    bitmap.SetPixel(x, _bitmapHeight - 1 - i, System.Drawing.Color.FromArgb(255,
                                 red,
                                 green,
                                 blue));
 
                 }
+                
             }
+            //bitmap = new ShapeDetection().GetShapeDetectionImage(bitmap);
+
             bitmap.Save(@"C:\Users\Home\Documents\Audacity\codexparts\Test.bmp");
             var hbit = bitmap.GetHbitmap();
-            Bitmap = Imaging.CreateBitmapSourceFromHBitmap(hbit, IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromWidthAndHeight(2048, 1024));
+            Bitmap = Imaging.CreateBitmapSourceFromHBitmap(hbit, IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromWidthAndHeight(_bitmapWidth, _bitmapHeight));
 
             OnPropertyChanged(null);
         }
