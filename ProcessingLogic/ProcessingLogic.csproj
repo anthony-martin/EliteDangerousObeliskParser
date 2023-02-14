@@ -67,8 +67,10 @@
     <Compile Include="Class1.cs" />
     <Compile Include="Process.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SegmentDetector.cs" />
     <Compile Include="ShapeDetection.cs" />
     <Compile Include="Tests\DecodeTests.cs" />
+    <Compile Include="Tests\SegmentDetectorTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
