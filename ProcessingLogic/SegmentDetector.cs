@@ -29,12 +29,17 @@ namespace ProcessingLogic
             do
             {
                 float value = 0;
-                for (int i = start + _from; i < start + _to; i++)
+                for (int i = start + 735; i < start + 980; i++)
                 {
                     value += fftBuffer[i];
                 }
 
-                if (value >6 )
+                if (value > 100)
+                {
+                    index = start / _frame;
+                    start = fftBuffer.Length;
+                }
+                else if (value > 6)
                 {
                     if (count == 0)
                     {
@@ -47,7 +52,7 @@ namespace ProcessingLogic
                     count = 0;
                     index = -1;
                 }
-                if (count >= 5)
+                if (count >= 15)
                 {
                     start = fftBuffer.Length;
                 }
@@ -59,68 +64,92 @@ namespace ProcessingLogic
             return index;
         }
 
-        public int FindEnd(List<float[]> fftBuffer, int start)
+        public int FindEnd(float[] fftBuffer, int start)
         {
-            //set a baseline here
-            float baseline = 0;
-            for (int i = 0; i < _hz / _sampleInterval; i += _sampleInterval)
-            {
-                var fft = fftBuffer[i];
-
-                for (int x = 720; x < 1024; x++)
-                {
-                    baseline += fft[x];
-                }
-            }
-            baseline = baseline / (_hz / _sampleInterval);
-
-            //when the value spikes here we check duration. If it's more than 1 second 
             int index = -1;
             int count = 0;
-            int end = start + _hz + _sampleInterval;
+            int dropped = 0;
+            start *= _frame;
             do
             {
                 float value = 0;
-                for (int y = 0; y < 5; y++)
+                for (int i = start + 763; i < start + 980; i++)
                 {
-                    var fft = fftBuffer[end + y];
-                    for (int x = 720; x < 1024; x++)
-                    {
-                        value += fft[x];
-                    }
+                    value += fftBuffer[i];
                 }
-                value /= 5;
-                if (end > 73000)
+
+                if (value > 160)
                 {
-                    if (Math.Abs(value - baseline) < 0.15)
-                    {
-                        if (count == 0)
-                        { index = end; }
-                        count++;
-                    }
-                }
-                else if (Math.Abs(value - baseline) < 0.15)
-                {
-                    if (count == 0)
-                    { index = end; }
                     count++;
+                    dropped = 0;
                 }
                 else
                 {
-                    count = 0;
-                    index = -1;
+                    dropped++;
+                    if (dropped > 3)
+                    {
+                        count = 0;
+                    }
                 }
-                if (count >= 10)
+                if (count >= 72)
                 {
-
-                    end = fftBuffer.Count;
+                    index = start / _frame;
+                    start = fftBuffer.Length;
                 }
-                end += _sampleInterval;
+                start += _frame;
             }
-            while (end < fftBuffer.Count - 5);
-
-
+            while (start < fftBuffer.Length - _frame);
             return index;
+        }
+
+        public List<int> FindSeperators(float[] fftBuffer, int start, int end)
+        {
+            var results = new List<int>();
+            int endIndex = end * _frame;
+            int index = 0;
+            int count = 0;
+            int dropped = 0;
+            start *= _frame;
+            
+            do
+            {
+                float value = 0;
+                for (int i = start + 200; i < start + 545; i++)
+                {
+                    value += fftBuffer[i];
+                }
+
+                if (value > 180)
+                {
+                    if (count == 0)
+                    {
+                        index = start / _frame;
+                    }
+                    count++;
+                    dropped = 0;
+                }
+                else
+                {
+                    
+                    if (count == 5 && dropped > 4)
+                    {
+                        results.Add(index);
+                    }
+                    if (dropped > 4)
+                    {
+                        count = 0;
+                    }
+                    else if(count > 0 && count < 5)
+                    {
+                        count++;
+                    }
+                    dropped++;
+                }
+                
+                start += _frame;
+            }
+            while (start < endIndex - _frame);
+            return results;
         }
     }
 }

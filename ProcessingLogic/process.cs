@@ -23,6 +23,9 @@ namespace Signals
         private int _bitmapWidth = 4096;
         private int _bitmapHeight = 1024;
 
+        public ProcessImage()
+        {
+        }
 
         public ProcessImage(string filename)
         {
@@ -30,14 +33,13 @@ namespace Signals
 
             using (var audioFile = new AudioFileReader(filename))
             {
-                var data = audioFile.HasData(_fftLength);
                 var format = audioFile.WaveFormat;
                 _bytesPerSameple = format.BitsPerSample / 8;
                 var bytesPerSecond = format.AverageBytesPerSecond;
                 
                 //here we double the buffer for stereo as we are going to skip half the data
                 _fftLengthBytes = _fftLength * _bytesPerSameple * format.Channels;
-                int readSegment = Math.Min(_fftLengthBytes, bytesPerSecond * format.Channels / 1000);
+                int readSegment = Math.Min(_fftLengthBytes, bytesPerSecond / 1000);
                 
 
                 var buffer = new byte[_fftLengthBytes];
@@ -52,8 +54,8 @@ namespace Signals
                         {
                             //todo add config for this to select channel
                             
-                            reading = BitConverter.ToSingle(buffer, (i * 2 )* _bytesPerSameple);
-                            reading += BitConverter.ToSingle(buffer, (i * 2 +1) * _bytesPerSameple);
+                            reading = BitConverter.ToSingle(buffer, (i * format.Channels) * _bytesPerSameple);
+                            reading += BitConverter.ToSingle(buffer, (i * format.Channels + 1) * _bytesPerSameple);
                         }
                         else
                         {
@@ -172,6 +174,11 @@ namespace Signals
 
             bitmap.Save(@"C:\Users\Home\Documents\Audacity\codexparts\Test.bmp");
 
+            return BitmapToByte(bitmap);
+        }
+
+        public float[] BitmapToByte(Bitmap bitmap)
+        {
             var pixels = new float[_bitmapHeight * _bitmapWidth];
 
             for (int i = 0; i < _bitmapWidth; i++)
@@ -179,7 +186,7 @@ namespace Signals
                 for (int y = 0; y < _bitmapHeight; y++)
                 {
                     var colour = bitmap.GetPixel(i, y);
-                    if (colour.R >200)
+                    if (colour.R > 200)
                     {
                         pixels[i * _bitmapHeight + y] = 1;
                     }

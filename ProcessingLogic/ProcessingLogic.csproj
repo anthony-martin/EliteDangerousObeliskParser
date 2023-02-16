@@ -75,6 +75,20 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Tests\resources\Test8.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Tests\resources\Test2.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Tests\resources\Test1.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Tests\resources\Test27.bmp" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
