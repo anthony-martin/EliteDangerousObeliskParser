@@ -35,7 +35,7 @@ namespace ProcessingLogic.Tests
         {
             var start = _segmentDetector.FindStart(_buffer);
 
-            Assert.AreEqual( 34, start);
+            Assert.AreEqual( 35, start);
         }
 
         [Test]
@@ -138,7 +138,7 @@ namespace ProcessingLogic.Tests
         {
             var start = _segmentDetector.FindStart(_buffer);
 
-            Assert.AreEqual(34, start);
+            Assert.AreEqual(75, start);
         }
 
         [Test]
@@ -147,15 +147,15 @@ namespace ProcessingLogic.Tests
 
             var end = _segmentDetector.FindEnd(_buffer, 0);
 
-            Assert.AreEqual(end, 1454);
+            Assert.AreEqual(end, 1481);
         }
 
         [Test]
         public void FindSegmemts()
         {
-            var end = _segmentDetector.FindSeperators(_buffer, 33, 1454);
+            var end = _segmentDetector.FindSeperators(_buffer, 33, 1484);
 
-            Assert.AreEqual(7, end.Count);
+            Assert.AreEqual(5, end.Count);
         }
     }
 

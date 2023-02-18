@@ -6,6 +6,7 @@ using ProcessingLogic;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -88,21 +89,59 @@ namespace Signals
                     // add the new segment add the read segment to the end of the buffer. 
                     Array.Copy(readBuffer, 0, buffer, _fftLengthBytes - readSegment , readSegment);
                 }
-                /*
-                 * Bin size = sample rate / fft size. 
-                 * 
-                 */
-                //using (var outputDevice = new WaveOutEvent())
-                //{
-                //    outputDevice.Init(audioFile);
-                //    outputDevice.Play();
-                //    while (outputDevice.PlaybackState == PlaybackState.Playing)
-                //    {
-                //        Thread.Sleep(1000);
-                //    }
-                //}
+
+                
             }
 
+        }
+
+        public void ProcessAndSave(string filename)
+        {
+
+            var bytes = ImageProcessAndConvertToBytes();
+
+            var detector = new SegmentDetector();
+
+            var startIndex = detector.FindStart(bytes);
+            if (startIndex != -1)
+            {
+                startIndex = Math.Max(0, startIndex-20);
+                var endIndex = detector.FindEnd(bytes, startIndex);
+                if (endIndex != -1)
+                {
+                    endIndex = Math.Min(bytes.Length, endIndex + 20);
+                    var segments = detector.FindSeperators(bytes, startIndex, endIndex);
+
+                    var imageCreator = new ImageCreator();
+
+                    //main image
+
+                    var baseName = Path.GetFileNameWithoutExtension(filename);
+                    var basePath = Path.Combine(Path.GetDirectoryName(filename), "Processed");
+
+                    var mainImage = Path.Combine(basePath, baseName + ".png");
+                    imageCreator.CreateImage(_fftBuffer, startIndex, endIndex, mainImage);
+                    var start = startIndex;
+                    for(int i =0; i<= segments.Count; i++)
+                    {
+                        var end = endIndex-310;
+                        if (i < segments.Count)
+                        {
+                            end = segments[i] + 5;
+                        }
+                        var segmentName = Path.Combine(basePath, baseName + $"-{i+1}.png");
+                        imageCreator.CreateImage(_fftBuffer, start, end, segmentName);
+
+                        if (i < segments.Count)
+                        {
+                            start = segments[i];
+                        }
+                    }
+
+                    var footer = Path.Combine(basePath, baseName + $"-{segments.Count+2}.png");
+                    imageCreator.CreateImage(_fftBuffer, endIndex-350, endIndex, footer);
+                }
+            }
         }
 
         public float[] ImageProcessAndConvertToBytes()
@@ -172,7 +211,9 @@ namespace Signals
             }
             bitmap = new ShapeDetection().GetShapeDetectionImage(bitmap);
 
-            bitmap.Save(@"C:\Users\Home\Documents\Audacity\codexparts\Test.bmp");
+            //bitmap.Save(@"C:\Users\Home\Documents\Audacity\codexparts\Test.bmp");
+
+        
 
             return BitmapToByte(bitmap);
         }
@@ -196,6 +237,7 @@ namespace Signals
 
             return pixels;
         }
+
 
         public void NormaliseArray(int lowerCutoff, int divider)
         {

@@ -39,10 +39,11 @@ namespace Signals
             OverlayAboveSement = 720;
             StartOverlayIndex = 191;
             Gain = 2500;// 7500000.0f;
-            _filePath = @"C:\Users\Home\Documents\Audacity\codexparts\guardian_obelisk_08.flac";
-            _process = new ProcessImage(_filePath);
-            _process.NormaliseArray(StartOverlayIndex*2, OverlayAboveSement * 2);
-            Draw();
+            //_filePath = @"C:\Users\Home\Documents\Audacity\codexparts\guardian_obelisk_08.flac";
+            //_process = new ProcessImage(_filePath);
+            //_process.NormaliseArray(StartOverlayIndex*2, OverlayAboveSement * 2);
+            //_process.ProcessAndSave(_filePath);
+            //Draw();
 
             DataContext = this;
             InitializeComponent();
@@ -149,9 +150,9 @@ namespace Signals
                 }
                 
             }
-            bitmap = new ShapeDetection().GetShapeDetectionImage(bitmap);
+            //bitmap = new ShapeDetection().GetShapeDetectionImage(bitmap);
 
-            bitmap.Save(@"C:\Users\Home\Documents\Audacity\codexparts\Test.bmp");
+            //bitmap.Save(@"C:\Users\Home\Documents\Audacity\codexparts\Test.bmp");
 
 
             var bits = bitmap.LockBits(new System.Drawing.Rectangle(0, 0, _bitmapWidth, _bitmapHeight), System.Drawing.Imaging.ImageLockMode.ReadWrite, bitmap.PixelFormat);
@@ -218,6 +219,7 @@ namespace Signals
                 {
                     _process = new ProcessImage(fileName);
                     _process.NormaliseArray(StartOverlayIndex * 2, OverlayAboveSement * 2);
+                    _process.ProcessAndSave(fileName);
                     Draw();
                 }
                 catch

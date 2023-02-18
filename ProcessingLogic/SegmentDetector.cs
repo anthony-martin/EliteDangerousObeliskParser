@@ -119,7 +119,7 @@ namespace ProcessingLogic
                     value += fftBuffer[i];
                 }
 
-                if (value > 180)
+                if (value > 240)
                 {
                     if (count == 0)
                     {
