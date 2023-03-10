@@ -33,9 +33,9 @@
         
         Source="{Binding Path=Bitmap}"/>
         </Border>
-        <Label Grid.Row="0" Grid.Column="0">OverlayStart</Label>
-        <TextBox Height="20" Text="{Binding Path=StartOverlayIndex}" VerticalAlignment="Top" TextWrapping="Wrap" Grid.Row="0" Grid.Column="1" Width="178"/>
-        <Button Background="LightBlue" Height="35" Width="75" Grid.Row="0" VerticalAlignment="Top" HorizontalAlignment="Left" Grid.Column="3" Click="Button_Click_1">SelectFile</Button>
+        
+        <Button Background="LightBlue" Height="35" Width="75" Grid.Row="0" VerticalAlignment="Top" HorizontalAlignment="Left" Grid.Column="0" Click="Button_Click_1">Process Single File</Button>
+        <Button Background="LightBlue" Height="35" Width="75" Grid.Row="0" VerticalAlignment="Top" HorizontalAlignment="Left" Grid.Column="1" Click="ProcessFolder">Process Folder</Button>
         <Label Grid.Row="1" Grid.Column="0">OverlaySegment</Label>
         <TextBox Height="20" Text="{Binding Path=OverlayAboveSement}" VerticalAlignment="Top" TextWrapping="Wrap" Grid.Row="1" Grid.Column="1" Width="178"/>
         <Label Grid.Row="2" Grid.Column="0">HighBoost</Label>

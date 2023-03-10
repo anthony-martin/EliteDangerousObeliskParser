@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -13,6 +14,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
+using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
@@ -208,24 +210,60 @@ namespace Signals
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
 
-        private void Button_Click_1(object sender, RoutedEventArgs e)
+        private async void Button_Click_1(object sender, RoutedEventArgs e)
         {
-            var dialog = new OpenFileDialog();
+            var dialog = new Microsoft.Win32.OpenFileDialog();
 
             if (true == dialog.ShowDialog())
             {
                 var fileName = dialog.FileName;
-                try
+                await ProcessFile(fileName);
+            }
+        }
+
+        private async void ProcessFolder(object sender, RoutedEventArgs e)
+        {
+            var inputDirectory = "";
+            var outputDirectory = "";
+
+            var folderBrowser =  new FolderBrowserDialog();
+            folderBrowser.Description = "Select Input directory";
+            if (folderBrowser.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                inputDirectory = folderBrowser.SelectedPath;
+                folderBrowser.Description = "Select output directory";
+                if (folderBrowser.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                 {
-                    _process = new ProcessImage(fileName);
-                    _process.NormaliseArray(StartOverlayIndex * 2, OverlayAboveSement * 2);
-                    _process.ProcessAndSave(fileName);
-                    Draw();
-                }
-                catch
-                {
+                    outputDirectory = folderBrowser.SelectedPath;
+
+                    DirectoryInfo dinfo = new DirectoryInfo(inputDirectory);
+
+                    var flakFiles = dinfo.GetFiles("*.flac");
+                    foreach (var file in flakFiles)
+                    {
+                        await ProcessFile(file.FullName, outputDirectory);
+                    }
                 }
             }
+
+        }
+
+        public async Task<bool> ProcessFile(string fileName, string outputDir = null)
+        {
+            bool success = false;
+            try
+            {
+                _process = new ProcessImage(fileName);
+                _process.NormaliseArray(StartOverlayIndex * 2, OverlayAboveSement * 2);
+                _process.ProcessAndSave(fileName, outputDir);
+                Draw();
+                success = true;
+            }
+            catch
+            {
+            }
+
+            return success;
         }
     }
 }

@@ -95,7 +95,7 @@ namespace Signals
 
         }
 
-        public void ProcessAndSave(string filename)
+        public void ProcessAndSave(string filename, string outputDirectory = null)
         {
 
             var bytes = ImageProcessAndConvertToBytes();
@@ -115,16 +115,19 @@ namespace Signals
                     var imageCreator = new ImageCreator();
 
                     //main image
-
+                    if (string.IsNullOrWhiteSpace(outputDirectory))
+                    {
+                        outputDirectory = Path.Combine(Path.GetDirectoryName(filename),"Processed");
+                    }
                     var baseName = Path.GetFileNameWithoutExtension(filename);
-                    var basePath = Path.Combine(Path.GetDirectoryName(filename), "Processed");
+                    var basePath = outputDirectory;
 
-                    var mainImage = Path.Combine(basePath, baseName + ".png");
+                    var mainImage = Path.Combine(basePath, $"{endIndex - startIndex}"+baseName + ".png");
                     imageCreator.CreateImage(_fftBuffer, startIndex, endIndex, mainImage);
                     var start = startIndex;
                     for(int i =0; i<= segments.Count; i++)
                     {
-                        var end = endIndex-310;
+                        var end = endIndex-330;
                         if (i < segments.Count)
                         {
                             end = segments[i] + 5;
