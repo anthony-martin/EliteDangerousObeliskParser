@@ -33,8 +33,10 @@ namespace Signals
         private ProcessImage _process;
 
         public event PropertyChangedEventHandler PropertyChanged;
-        private int _bitmapWidth = 4096;
-        private int _bitmapHeight = 1024;
+        private int _bitmapWidth = 2048;
+        private int _bitmapHeight = 2048;
+        private int _imageSegment = 0;
+        private int _block = 3;
         public MainWindow()
         {
             HighRangeBoost = 1;
@@ -55,18 +57,20 @@ namespace Signals
         {
             Bitmap bitmap = new Bitmap(_bitmapWidth, _bitmapHeight);
 
-            int block = 50;
+            int block = _block;
             //if (_process.Buffer.Count / _bitmapWidth > 1)
             //{
             //    block = _process.Buffer.Count / _bitmapWidth;
             //}
-            for (int x = 0; x < _bitmapWidth && x* block + block < _process.Buffer.Count; x++)
+            
+
+            for (int x = 0; x < _bitmapWidth && _imageSegment + x* block + block < _process.Buffer.Count; x++)
             {
                 // here we add all the blocks together
                 float[] buffer = new float[_bitmapHeight];
                 for (int y = 0; y < block; y++)
                 {
-                    var blockSegment = _process.Buffer[x*block+y];
+                    var blockSegment = _process.Buffer[_imageSegment + x * block+y];
 
                     var frequencyBins = blockSegment.Length / _bitmapHeight;
                   
@@ -200,6 +204,24 @@ namespace Signals
             set;
         }
 
+        private void PreviousSegment(object sender, RoutedEventArgs e)
+        {
+            if (_imageSegment > 0)
+            {
+                _imageSegment -= _bitmapWidth * _block;
+            }
+            Draw();
+        }
+
+        private void NextSegment(object sender, RoutedEventArgs e)
+        {
+            if (_imageSegment + _bitmapWidth * _block <= _process.Buffer.Count)
+            {
+                _imageSegment += _bitmapWidth * _block;
+            }
+            Draw();
+        }
+
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             Draw();
@@ -255,7 +277,7 @@ namespace Signals
             {
                 _process = new ProcessImage(fileName);
                 _process.NormaliseArray(StartOverlayIndex * 2, OverlayAboveSement * 2);
-                _process.ProcessAndSave(fileName, outputDir);
+                //_process.ProcessAndSave(fileName, outputDir);
                 Draw();
                 success = true;
             }

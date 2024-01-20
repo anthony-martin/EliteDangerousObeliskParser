@@ -22,18 +22,23 @@
         </Grid.RowDefinitions>
 
         <Border Background="LightGray" Grid.ColumnSpan ="3" Grid.RowSpan="7">
-            
+            <ScrollViewer>
             <Image HorizontalAlignment="Left" 
             Grid.Column="2"
             Grid.RowSpan="7"
-        Height="1024" 
+        Height="2048" 
         Margin="300,70,0,0" 
         VerticalAlignment="Top" 
         Width="2048"
         
         Source="{Binding Path=Bitmap}"/>
+            </ScrollViewer>
         </Border>
-        
+        <Button Content="previous" HorizontalAlignment="Left" Height="34" Margin="300,1113,0,0" VerticalAlignment="Top" Width="103" Grid.ColumnSpan ="3" Grid.RowSpan="7" Click="PreviousSegment"/>
+
+        <Button Content="Next" HorizontalAlignment="Left" Height="34" Margin="600,1113,0,0" VerticalAlignment="Top" Width="103"  Grid.ColumnSpan ="3" Grid.RowSpan="7" Click="NextSegment"/>
+
+
         <Button Background="LightBlue" Height="35" Width="75" Grid.Row="0" VerticalAlignment="Top" HorizontalAlignment="Left" Grid.Column="0" Click="Button_Click_1">Process Single File</Button>
         <Button Background="LightBlue" Height="35" Width="75" Grid.Row="0" VerticalAlignment="Top" HorizontalAlignment="Left" Grid.Column="1" Click="ProcessFolder">Process Folder</Button>
         <Label Grid.Row="1" Grid.Column="0">OverlaySegment</Label>
