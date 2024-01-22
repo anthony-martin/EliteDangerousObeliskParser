@@ -1,26 +1,14 @@
-﻿using Microsoft.Win32;
-using ProcessingLogic;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.IO;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Forms;
-using System.Windows.Input;
 using System.Windows.Interop;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace Signals
 {
@@ -34,15 +22,15 @@ namespace Signals
 
         public event PropertyChangedEventHandler PropertyChanged;
         private int _bitmapWidth = 2048;
-        private int _bitmapHeight = 2048;
+        private int _bitmapHeight = 1024;
         private int _imageSegment = 0;
-        private int _block = 3;
+        private int _block = 10;
         public MainWindow()
         {
             HighRangeBoost = 1;
-            OverlayAboveSement = 720;
-            StartOverlayIndex = 191;
-            Gain = 2500;// 7500000.0f;
+            OverlayAboveSement = 700;
+            StartOverlayIndex = 180;
+            Gain = 128;// 7500000.0f;
             //_filePath = @"C:\Users\Home\Documents\Audacity\codexparts\guardian_obelisk_08.flac";
             //_process = new ProcessImage(_filePath);
             //_process.NormaliseArray(StartOverlayIndex*2, OverlayAboveSement * 2);
@@ -208,18 +196,20 @@ namespace Signals
         {
             if (_imageSegment > 0)
             {
-                _imageSegment -= _bitmapWidth * _block;
+                _imageSegment -= _bitmapWidth * _block /2;
+                Draw();
             }
-            Draw();
+            
         }
 
         private void NextSegment(object sender, RoutedEventArgs e)
         {
             if (_imageSegment + _bitmapWidth * _block <= _process.Buffer.Count)
             {
-                _imageSegment += _bitmapWidth * _block;
+                _imageSegment += _bitmapWidth * _block /2;
+                Draw();
             }
-            Draw();
+           
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
@@ -234,6 +224,7 @@ namespace Signals
 
         private async void Button_Click_1(object sender, RoutedEventArgs e)
         {
+            _imageSegment = 0;
             var dialog = new Microsoft.Win32.OpenFileDialog();
 
             if (true == dialog.ShowDialog())
@@ -276,7 +267,7 @@ namespace Signals
             try
             {
                 _process = new ProcessImage(fileName);
-                _process.NormaliseArray(StartOverlayIndex * 2, OverlayAboveSement * 2);
+                _process.NormaliseArray(StartOverlayIndex , OverlayAboveSement );
                 //_process.ProcessAndSave(fileName, outputDir);
                 Draw();
                 success = true;

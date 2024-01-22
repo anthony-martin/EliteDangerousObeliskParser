@@ -17,7 +17,8 @@ namespace Signals
     public class ProcessImage
     {
         private List<float[]> _fftBuffer;
-        private int _fftLength = 4096;
+        private int _fftLength = 2048;
+        private int _fftCompexity = 11;
         private int _fftLengthBytes ;
         private int _bytesPerSameple;
 
@@ -37,7 +38,7 @@ namespace Signals
                 var format = audioFile.WaveFormat;
                 _bytesPerSameple = format.BitsPerSample / 8;
                 var bytesPerSecond = format.AverageBytesPerSecond;
-                
+                audioFile.Volume = 1.0f;
                 //here we double the buffer for stereo as we are going to skip half the data
                 _fftLengthBytes = _fftLength * _bytesPerSameple * format.Channels;
                 int readSegment = Math.Min(_fftLengthBytes, bytesPerSecond / 1000);
@@ -73,7 +74,7 @@ namespace Signals
                     }
 
 
-                    FastFourierTransform.FFT(true, 12, complex);
+                    FastFourierTransform.FFT(true, _fftCompexity, complex);
                     var array = new float[_fftLength/2];
                     for (int i = 0; i < _fftLength / 2; i++)
                     {
@@ -246,7 +247,7 @@ namespace Signals
         {
            // NormaliseArrayRange(0, lowerCutoff, 0.009f);
             NormaliseArrayRange(lowerCutoff, divider, 0.009f);
-            NormaliseArrayRange(divider, _fftLength/2, 0.03f);
+            NormaliseArrayRange(divider, _fftLength/2, 0.009f);
             foreach (var buffer in _fftBuffer)
             {
                 for (int i = 0; i < lowerCutoff; i++)
@@ -259,43 +260,64 @@ namespace Signals
 
         public void NormaliseArrayRange(int bottom, int top, float cutoff)
         {
-            float min = 0;
+            float min = float.MaxValue;
             float max = 0;
+
+            //make it a logarithmic value
             foreach (var buffer in _fftBuffer)
             {
                 for (int i = bottom; i < top; i++)
                 {
-                    float value = buffer[i];
+                    var boostedValue = Math.Abs(buffer[i] * 450000.0f);
+                    if (boostedValue >= 1)
+                    {
+                        var temp = (float)Math.Abs(Math.Log10(boostedValue));
+                        if (float.IsInfinity(temp) || temp > 10)
+                        {
+                            buffer[i] = 0;
+                        }
+                        if (float.IsNaN(temp))
+                        {
+                            buffer[i] = 0;
+                        }
+                        else
+                        {
+                            buffer[i] = temp;
+                        }
+                    }
+                    else 
+                    {
+                        buffer[i] = 0;
+                    }
+                }
+            }
+
+            //find the max and min
+            foreach (var buffer in _fftBuffer)
+            {
+                for (int i = bottom; i < top; i++)
+                {
+                    float value = buffer[i] ;
                     if (value < min)
                     {
                         min = value;
                     }
-                    else if (value > max)
+                    else if (value > max && !float.IsInfinity(value))
                     {
                         max = value;
                     }
                 }
             }
 
-           // min *= -1;
-
+            var divisor = max - min;
+            //normalise that shit
             foreach (var buffer in _fftBuffer)
             {
-                
-
                 for (int i = bottom; i < top; i++)
                 {
                     float value = buffer[i];
-                    if (value< 0)
-                    {
-                        value =  (value/ min)  ;
-                    }
-                    else
-                    {
-                        value =  (value / max );
-                    }
-
-                   
+                    
+                    value = Math.Abs((value - min)/ divisor);        
                     //if (value > cutoff)
                     //{
                     //    value *= .75f;
