@@ -17,16 +17,18 @@ namespace Signals
     public class ProcessImage
     {
         private List<float[]> _fftBuffer;
-        private int _fftLength = 2048;
-        private int _fftCompexity = 11;
+        private int _fftLength = 8196;
+        private int _fftCompexity = 13;
         private int _fftLengthBytes ;
         private int _bytesPerSameple;
 
         private int _bitmapWidth = 4096;
-        private int _bitmapHeight = 1024;
+        private int _bitmapHeight = 0;
 
         public ProcessImage()
         {
+            _bitmapHeight = _fftLength / 2;
+
         }
 
         public ProcessImage(string filename)

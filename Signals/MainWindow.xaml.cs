@@ -24,7 +24,7 @@ namespace Signals
         private int _bitmapWidth = 2048;
         private int _bitmapHeight = 1024;
         private int _imageSegment = 0;
-        private int _block = 10;
+        private int _block = 50;
         public MainWindow()
         {
             HighRangeBoost = 1;
@@ -46,27 +46,22 @@ namespace Signals
             Bitmap bitmap = new Bitmap(_bitmapWidth, _bitmapHeight);
 
             int block = _block;
-            //if (_process.Buffer.Count / _bitmapWidth > 1)
-            //{
-            //    block = _process.Buffer.Count / _bitmapWidth;
-            //}
-            
 
-            for (int x = 0; x < _bitmapWidth && _imageSegment + x* block + block < _process.Buffer.Count; x++)
+            for (int x = 0; x < _bitmapWidth && _imageSegment + x * block + block < _process.Buffer.Count; x++)
             {
                 // here we add all the blocks together
                 float[] buffer = new float[_bitmapHeight];
                 for (int y = 0; y < block; y++)
                 {
-                    var blockSegment = _process.Buffer[_imageSegment + x * block+y];
+                    var blockSegment = _process.Buffer[_imageSegment + x * block + y];
 
-                    var frequencyBins = blockSegment.Length / _bitmapHeight;
-                  
-                    for (int z = 0; z < _bitmapHeight; z++)
+                    var frequencyBins = 2;
+
+                    for (int z = 0; z  <  _bitmapHeight; z++)
                     {
                         for (int w = 0; w < frequencyBins; w++)
                         {
-                            buffer[z] += (blockSegment[z* frequencyBins + w] / (float)frequencyBins / (float)block);
+                            buffer[z] += (blockSegment[ 1024 + z * frequencyBins + w] / (float)block);
                         }
                     }
                 }
@@ -104,18 +99,26 @@ namespace Signals
                     powerInverse += Math.Abs(value);
 
 
-                    //if (powerInverse < 0.5)
+                    //if (i != 170 &&
+                    //i != 213 &&
+                    //i != 256 &&
+                    //i != 298 &&
+                    //i != 341 &&
+                    //i != 384 &&
+                    //i != 426 &&
+                    //i != 469 &&
+                    //i != 512 &&
+                    //i != 554 &&
+                    //i != 597)
                     {
                         blue = Convert.ToInt32(Math.Min(255.0f, Gain * powerInverse));
-                    }
-                    //if (powerInverse >= 0.5f && powerInverse < 0.75f)
-                    {
                         green = Convert.ToInt32(Math.Min(255.0f, Gain * powerInverse));
-                    }
-                    //if (powerInverse > 0.75f)
-                    {
                         red = Convert.ToInt32(Math.Min(255.0f, Gain * powerInverse));
                     }
+                    //else
+                    //{
+                    //    red = 255;
+                    //}
                     if (i > OverlayAboveSement)
                     {
                         powerInverse *= HighRangeBoost;
