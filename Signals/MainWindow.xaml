@@ -11,44 +11,116 @@
             <ColumnDefinition Width="150"/>
             <ColumnDefinition Width="150"/>
             <ColumnDefinition/>
+            <ColumnDefinition Width="20"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition/>
             <RowDefinition/>
+            <RowDefinition/>
+            <RowDefinition Height=" 50"/>
             <RowDefinition/>
             <RowDefinition/>
             <RowDefinition/>
             <RowDefinition/>
         </Grid.RowDefinitions>
 
-        <Border Background="LightGray" Grid.ColumnSpan ="3" Grid.RowSpan="7">
-            <ScrollViewer>
-            <Image HorizontalAlignment="Left" 
-            Grid.Column="2"
+            <Border BorderBrush="Black" BorderThickness="2"
+                         Grid.Column="2" 
             Grid.RowSpan="7"
-        Height="2048" 
-        Margin="300,70,0,0" 
+        Height="512" 
         VerticalAlignment="Top" 
-        Width="2048"
+        Width="2048">
+            <Image  Width="2048" HorizontalAlignment="Left" 
+           
         
-        Source="{Binding Path=Bitmap}"/>
-            </ScrollViewer>
-        </Border>
-        <Button Content="previous" HorizontalAlignment="Left" Height="34" Margin="300,1113,0,0" VerticalAlignment="Top" Width="103" Grid.ColumnSpan ="3" Grid.RowSpan="7" Click="PreviousSegment"/>
+        Source="{Binding Path=Bitmap}">
+                    <Image.ToolTip>
+                        <ToolTip DataContext="{Binding PlacementTarget.Source,
+                                       RelativeSource={RelativeSource Self}}">
+                            <StackPanel>
+                                <TextBlock Text="{Binding PixelWidth, StringFormat=Width: {0}}"/>
+                                <TextBlock Text="{Binding PixelHeight, StringFormat=Height: {0}}"/>
+                            </StackPanel>
+                        </ToolTip>
+                    </Image.ToolTip>
+                </Image>
+            </Border>
 
-        <Button Content="Next" HorizontalAlignment="Left" Height="34" Margin="600,1113,0,0" VerticalAlignment="Top" Width="103"  Grid.ColumnSpan ="3" Grid.RowSpan="7" Click="NextSegment"/>
+
+    
+        <Border BorderBrush="Black" BorderThickness="2"
+                         Grid.Column="2"
+            Grid.RowSpan="3"
+        Height="512" 
+        VerticalAlignment="Top" 
+                
+        Width="2048" Grid.Row="4">
+
+            <Image Width="2048" HorizontalAlignment="Left" 
+        Source="{Binding Path=BitmapDetailed}">
+                <Image.ToolTip>
+                    <ToolTip DataContext="{Binding PlacementTarget.Source,
+                                       RelativeSource={RelativeSource Self}}">
+                        <StackPanel>
+                            <TextBlock Text="{Binding PixelWidth, StringFormat=Width: {0}}"/>
+                            <TextBlock Text="{Binding PixelHeight, StringFormat=Height: {0}}"/>
+                        </StackPanel>
+                    </ToolTip>
+                </Image.ToolTip>
+            </Image>
+        </Border>
+        <Border Grid.Column="2"
+            Grid.RowSpan="3"
+        Height="512" 
+        VerticalAlignment="Top" 
+                
+        Width="2048" Grid.Row="4" BorderThickness="0,0,5,0" BorderBrush="Blue"/>
+        <Border Grid.Column="2"
+            Grid.RowSpan="3"
+        Height="512" 
+        VerticalAlignment="Top" 
+                
+        Width="2048" Grid.Row="4" BorderThickness="0,0,0,3" BorderBrush="Red"/>
+        <Border Grid.Column="2"
+            Grid.RowSpan="3"
+        Height="512" 
+        VerticalAlignment="Top" 
+                
+        Width="2048" Grid.Row="4" BorderThickness="0,3,0,0" BorderBrush="Green"/>
+
+
+        <Button Content="previous" HorizontalAlignment="Left" Height="34" Grid.Row="3" Grid.Column="2" Margin="75,0,0,0" VerticalAlignment="Top" Width="103" Grid.ColumnSpan ="3"  Click="PreviousSegment"/>
+
+        <Button Content="Next" HorizontalAlignment="Left" Height="34"  Grid.Row="3" Grid.Column="2" Margin="250,0,0,0" VerticalAlignment="Top" Width="103"  Grid.ColumnSpan ="3"  Click="NextSegment"/>
+
+
+        <Button Content="Next" HorizontalAlignment="Left" Grid.Row="4" VerticalAlignment="Bottom" Grid.Column="2"  Width="100" Height="25" Grid.ColumnSpan ="3"  Click="NextSegment" >
+            <Button.RenderTransform>
+                <RotateTransform CenterX="0" CenterY="0" Angle="-90" />
+            </Button.RenderTransform>
+        </Button>
+        <Button Content="previous" HorizontalAlignment="Left" Grid.Row="6" VerticalAlignment="Bottom" Grid.Column="2"  Width="100" Height="25" Grid.ColumnSpan ="3"  Click="PreviousSegment" >
+            <Button.RenderTransform>
+                <RotateTransform CenterX="0" CenterY="0" Angle="-90" />
+            </Button.RenderTransform>
+        </Button>
+
+        
 
 
         <Button Background="LightBlue" Height="35" Width="75" Grid.Row="0" VerticalAlignment="Top" HorizontalAlignment="Left" Grid.Column="0" Click="Button_Click_1">Process Single File</Button>
         <Button Background="LightBlue" Height="35" Width="75" Grid.Row="0" VerticalAlignment="Top" HorizontalAlignment="Left" Grid.Column="1" Click="ProcessFolder">Process Folder</Button>
         <Label Grid.Row="1" Grid.Column="0">OverlaySegment</Label>
-        <TextBox Height="20" Text="{Binding Path=OverlayAboveSement}" VerticalAlignment="Top" TextWrapping="Wrap" Grid.Row="1" Grid.Column="1" Width="178"/>
+        <TextBox Height="20" Text="{Binding Path=OverlayAboveSement}" VerticalAlignment="Top" TextWrapping="Wrap" Grid.Row="1" Grid.Column="1" Width="150"/>
         <Label Grid.Row="2" Grid.Column="0">HighBoost</Label>
-        <TextBox Height="20" Text="{Binding Path=HighRangeBoost}" VerticalAlignment="Top" TextWrapping="Wrap" Grid.Row="2" Grid.Column="1" Width="178"/>
+        <TextBox Height="20" Text="{Binding Path=HighRangeBoost}" VerticalAlignment="Top" TextWrapping="Wrap" Grid.Row="2" Grid.Column="1" Width="150"/>
         <Label Grid.Row="3" Grid.Column="0">Gain</Label>
-        <TextBox Height="20" Text="{Binding Path=Gain}" VerticalAlignment="Top" TextWrapping="Wrap" Grid.Row="3" Grid.Column="1" Width="178"/>
-        <Button Background="LightBlue" Height="35" Grid.Row="4" Grid.Column="0" Click="Button_Click">Redraw</Button>
-        <Label Grid.Row="5" Grid.Column="0">OverlayStart</Label>
+        <TextBox Height="20" Text="{Binding Path=Gain}" VerticalAlignment="Top" TextWrapping="Wrap" Grid.Row="3" Grid.Column="1" Width="150"/>
+        
+        <Label Grid.Row="4" Grid.Column="0">OverlayStart</Label>
+        <TextBox Height="20" Text="{Binding Path=StartOverlayIndex}" VerticalAlignment="Top" TextWrapping="Wrap" Grid.Row="4" Grid.Column="1" Width="150"/>
+
+        <Button Background="LightBlue" Height="35" Grid.Row="7" Width="150" HorizontalAlignment="Left" VerticalAlignment="Top" Grid.Column="2" Click="Button_Click">Redraw</Button>
 
     </Grid>
 </Window>

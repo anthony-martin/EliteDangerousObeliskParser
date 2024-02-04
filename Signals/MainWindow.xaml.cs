@@ -22,15 +22,15 @@ namespace Signals
 
         public event PropertyChangedEventHandler PropertyChanged;
         private int _bitmapWidth = 2048;
-        private int _bitmapHeight = 1024;
+        private int _bitmapHeight = 512;
         private int _imageSegment = 0;
         private int _block = 50;
         public MainWindow()
         {
             HighRangeBoost = 1;
-            OverlayAboveSement = 700;
-            StartOverlayIndex = 180;
-            Gain = 128;// 7500000.0f;
+            OverlayAboveSement = 1400;
+            StartOverlayIndex = 360;
+            Gain = 180;// 7500000.0f;
             //_filePath = @"C:\Users\Home\Documents\Audacity\codexparts\guardian_obelisk_08.flac";
             //_process = new ProcessImage(_filePath);
             //_process.NormaliseArray(StartOverlayIndex*2, OverlayAboveSement * 2);
@@ -46,22 +46,22 @@ namespace Signals
             Bitmap bitmap = new Bitmap(_bitmapWidth, _bitmapHeight);
 
             int block = _block;
-
-            for (int x = 0; x < _bitmapWidth && _imageSegment + x * block + block < _process.Buffer.Count; x++)
+            int frequencyBins = 0;
+            for (int x = 0; x < _bitmapWidth &&  x * block + block < _process.Buffer.Count; x++)
             {
                 // here we add all the blocks together
                 float[] buffer = new float[_bitmapHeight];
                 for (int y = 0; y < block; y++)
                 {
-                    var blockSegment = _process.Buffer[_imageSegment + x * block + y];
+                    var blockSegment = _process.Buffer[ x * block + y];
 
-                    var frequencyBins = 2;
+                    frequencyBins = blockSegment.Length / _bitmapHeight;
 
-                    for (int z = 0; z  <  _bitmapHeight; z++)
+                    for (int z = 0; z < _bitmapHeight; z++)
                     {
                         for (int w = 0; w < frequencyBins; w++)
                         {
-                            buffer[z] += (blockSegment[ 1024 + z * frequencyBins + w] / (float)block);
+                            buffer[z] += (blockSegment[z * frequencyBins + w] / (float)frequencyBins / (float)block);
                         }
                     }
                 }
@@ -99,45 +99,48 @@ namespace Signals
                     powerInverse += Math.Abs(value);
 
 
-                    //if (i != 170 &&
-                    //i != 213 &&
-                    //i != 256 &&
-                    //i != 298 &&
-                    //i != 341 &&
-                    //i != 384 &&
-                    //i != 426 &&
-                    //i != 469 &&
-                    //i != 512 &&
-                    //i != 554 &&
-                    //i != 597)
+
                     {
                         blue = Convert.ToInt32(Math.Min(255.0f, Gain * powerInverse));
                         green = Convert.ToInt32(Math.Min(255.0f, Gain * powerInverse));
                         red = Convert.ToInt32(Math.Min(255.0f, Gain * powerInverse));
                     }
-                    //else
-                    //{
-                    //    red = 255;
-                    //}
+                    if( ( i == (800+ _bitmapWidth) / frequencyBins) 
+                    &&  x >= (_imageSegment / block ) &&  x <= (_imageSegment / block ) + _bitmapHeight / 2)
+                    {
+                        blue = 0;
+                        red = 255;
+                        green = 0;
+                    }
+
+                    if ((i == 800 / frequencyBins )
+                   && x >= (_imageSegment / block) && x <= (_imageSegment / block) + _bitmapHeight / 2)
+                    {
+                        blue = 255;
+                        red = 0;
+                        green = 0;
+                    }
+                    if (i >= 800 / frequencyBins && i <= ((800 + _bitmapWidth) / frequencyBins) 
+                    &&  x == (_imageSegment / block))
+                    {
+                        blue = 0;
+                        red = 255;
+                        green = 0;
+                    }
+
+                    if (i >= 800 / frequencyBins && i <= ((800 + _bitmapWidth) / frequencyBins)
+                   && ( x == (_imageSegment / block) + _bitmapHeight / 2))
+                    {
+                        blue = 0;
+                        red = 0;
+                        green = 255;
+                    }
+
                     if (i > OverlayAboveSement)
                     {
                         powerInverse *= HighRangeBoost;
                     }
-                    //if (i >= OverlayAboveSement - 1 && i <= OverlayAboveSement + 1)
-                    //{
-                    //    bitmap.SetPixel(x, _bitmapHeight - 1 - i, System.Drawing.Color.FromArgb(255,
-                    //                   255,
-                    //                   0,
-                    //                   0));
-                    //}
-                    //else if (x == 35)
-                    //{
-                    //    bitmap.SetPixel(x, _bitmapHeight - 1 - i, System.Drawing.Color.FromArgb(255,
-                    //                       255,
-                    //                       0,
-                    //                       0));
-                    //}
-                    //else
+                   
                     {
                         bitmap.SetPixel(x, _bitmapHeight - 1 - i, System.Drawing.Color.FromArgb(255,
                                     red,
@@ -164,6 +167,85 @@ namespace Signals
             Marshal.Copy(Iptr, pixels, 0, pixels.Length);
 
             Bitmap = Imaging.CreateBitmapSourceFromHBitmap(hbit, IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromWidthAndHeight(_bitmapWidth, _bitmapHeight));
+
+            OnPropertyChanged(null);
+        }
+
+        public void DrawZoomed()
+        {
+            Bitmap bitmap = new Bitmap(_bitmapWidth, _bitmapHeight);
+
+            int block = _block /2;
+
+            for (int x = 0; x < _bitmapHeight && _imageSegment + x * block + block < _process.Buffer.Count; x++)
+            {
+                // here we add all the blocks together
+                float[] buffer = new float[_bitmapWidth];
+                for (int y = 0; y < block; y++)
+                {
+                    var blockSegment = _process.Buffer[_imageSegment + x * block + y];
+
+                    var frequencyBins = 1;
+
+                    for (int z = 0; z < _bitmapWidth; z++)
+                    {
+                        for (int w = 0; w < frequencyBins; w++)
+                        {
+                            buffer[z] += (blockSegment[800 + z * frequencyBins + w] / (float)block);
+                        }
+                    }
+                }
+                for (int i = 0; i < _bitmapWidth; i++)
+                {
+                   
+                    float powerInverse = 0;
+                    int red = 0;
+                    int blue = 0;
+                    int green = 0;
+                    //for (int y = 0; y < 12; y++)
+
+                    var value = buffer[i];
+
+                    powerInverse += Math.Abs(value);
+
+
+                    {
+                        blue = Convert.ToInt32(Math.Min(255.0f, Gain * powerInverse));
+                        green = Convert.ToInt32(Math.Min(255.0f, Gain * powerInverse));
+                        red = Convert.ToInt32(Math.Min(255.0f, Gain * powerInverse));
+                    }
+
+                    if (i > OverlayAboveSement)
+                    {
+                        powerInverse *= HighRangeBoost;
+                    }
+                   
+                    {
+                        bitmap.SetPixel(_bitmapWidth - 1 - i, _bitmapHeight - 1 - x, System.Drawing.Color.FromArgb(255,
+                                    red,
+                                    green,
+                                    blue));
+                    }
+                }
+
+            }
+            //bitmap = new ShapeDetection().GetShapeDetectionImage(bitmap);
+
+            //bitmap.Save(@"C:\Users\Home\Documents\Audacity\codexparts\Test.bmp");
+
+
+            var bits = bitmap.LockBits(new System.Drawing.Rectangle(0, 0, _bitmapWidth, _bitmapHeight), System.Drawing.Imaging.ImageLockMode.ReadWrite, bitmap.PixelFormat);
+            var depth = System.Drawing.Bitmap.GetPixelFormatSize(bitmap.PixelFormat);
+
+            var hbit = bitmap.GetHbitmap();
+
+            var pixels = new byte[_bitmapHeight * _bitmapWidth];
+            var Iptr = bits.Scan0;
+
+            // Copy data from pointer to array
+            Marshal.Copy(Iptr, pixels, 0, pixels.Length);
+
+            BitmapDetailed = Imaging.CreateBitmapSourceFromHBitmap(hbit, IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromWidthAndHeight(_bitmapWidth, _bitmapHeight));
 
             OnPropertyChanged(null);
         }
@@ -195,22 +277,30 @@ namespace Signals
             set;
         }
 
+        public BitmapSource BitmapDetailed
+        {
+            get;
+            set;
+        }
+
         private void PreviousSegment(object sender, RoutedEventArgs e)
         {
             if (_imageSegment > 0)
             {
-                _imageSegment -= _bitmapWidth * _block /2;
+                _imageSegment -= _bitmapHeight * _block /4;
                 Draw();
+                DrawZoomed();
             }
             
         }
 
         private void NextSegment(object sender, RoutedEventArgs e)
         {
-            if (_imageSegment + _bitmapWidth * _block <= _process.Buffer.Count)
+            if (_imageSegment + _bitmapHeight * (_block /4 )  <= _process.Buffer.Count)
             {
-                _imageSegment += _bitmapWidth * _block /2;
+                _imageSegment += _bitmapHeight * _block /4;
                 Draw();
+                DrawZoomed();
             }
            
         }
@@ -218,6 +308,7 @@ namespace Signals
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             Draw();
+            DrawZoomed();
         }
 
         protected void OnPropertyChanged([CallerMemberName] string name = null)
@@ -270,9 +361,10 @@ namespace Signals
             try
             {
                 _process = new ProcessImage(fileName);
-                _process.NormaliseArray(StartOverlayIndex , OverlayAboveSement );
+                _process.NormaliseArray(StartOverlayIndex, OverlayAboveSement);
                 //_process.ProcessAndSave(fileName, outputDir);
                 Draw();
+                DrawZoomed();
                 success = true;
             }
             catch

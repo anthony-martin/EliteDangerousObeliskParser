@@ -23,7 +23,7 @@ namespace Signals
         private int _bytesPerSameple;
 
         private int _bitmapWidth = 4096;
-        private int _bitmapHeight = 0;
+        private int _bitmapHeight = 1024;
 
         public ProcessImage()
         {
@@ -270,7 +270,7 @@ namespace Signals
             {
                 for (int i = bottom; i < top; i++)
                 {
-                    var boostedValue = Math.Abs(buffer[i] * 450000.0f);
+                    var boostedValue = Math.Abs(buffer[i] * 900000.0f);
                     if (boostedValue >= 1)
                     {
                         var temp = (float)Math.Abs(Math.Log10(boostedValue));
