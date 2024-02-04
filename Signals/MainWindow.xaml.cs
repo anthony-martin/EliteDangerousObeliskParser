@@ -1,12 +1,15 @@
 ﻿using System;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Forms;
+using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media.Imaging;
 
@@ -25,17 +28,19 @@ namespace Signals
         private int _bitmapHeight = 512;
         private int _imageSegment = 0;
         private int _block = 50;
+
+        private ObservableCollection<MessagePartModel> _parts;
+        private MessagePartModel _selectedPart;
+
         public MainWindow()
         {
+            _parts = new ObservableCollection<MessagePartModel> { new MessagePartModel { Type="1111"}, new MessagePartModel { Type = "22222" } };
+            _selectedPart = _parts.FirstOrDefault();
             HighRangeBoost = 1;
             OverlayAboveSement = 1400;
             StartOverlayIndex = 360;
             Gain = 180;// 7500000.0f;
-            //_filePath = @"C:\Users\Home\Documents\Audacity\codexparts\guardian_obelisk_08.flac";
-            //_process = new ProcessImage(_filePath);
-            //_process.NormaliseArray(StartOverlayIndex*2, OverlayAboveSement * 2);
-            //_process.ProcessAndSave(_filePath);
-            //Draw();
+
 
             DataContext = this;
             InitializeComponent();
@@ -283,6 +288,40 @@ namespace Signals
             set;
         }
 
+        private void OnFrequency(object sender, MouseButtonEventArgs e)
+        {
+            var val =  e.GetPosition(sender as IInputElement);
+            if(_selectedPart != null)
+            {
+                //magic number is 24000/4096 which is our frequency accuracy and we should link this to values in the processor
+                _selectedPart.Frequencies.Add((int) ((800.0 + 2048 - val.X) * 5.859375));
+            }
+
+        }
+
+        private void OnTime(object sender, MouseButtonEventArgs e)
+        {
+            var val = e.GetPosition(sender as IInputElement);
+
+            int timestamp = _imageSegment + (512 - (int)val.Y) * _block / 2;
+            if (_selectedPart != null)
+            {
+                if(_selectedPart.Start == 0 )
+                {
+                    _selectedPart.Start = timestamp;
+                }
+                else if(_selectedPart.End != 0)
+                {
+                    _selectedPart.Start = timestamp;
+                    _selectedPart.End = 0;
+                }
+                else
+                {
+                    _selectedPart.End = timestamp;
+                }
+            }
+        }
+
         private void PreviousSegment(object sender, RoutedEventArgs e)
         {
             if (_imageSegment > 0)
@@ -303,6 +342,24 @@ namespace Signals
                 DrawZoomed();
             }
            
+        }
+
+        public ObservableCollection<MessagePartModel> Parts
+        {
+            get{ return _parts; }
+            set{
+            
+            }
+        }
+
+        public MessagePartModel SelectedPart
+        {
+            get { return _selectedPart; }
+            set 
+            { 
+                _selectedPart = value;
+                OnPropertyChanged(null);
+            }
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)

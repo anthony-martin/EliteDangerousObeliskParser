@@ -68,7 +68,7 @@ namespace Signals
             if (duration > 0)
             {
                 //magic number taken from the High Frequency plot at some point consider making it less magic
-                _duration = TimeSpan.FromMilliseconds(duration * 25);
+                _duration = TimeSpan.FromMilliseconds(duration );
                 OnPropertyChanged(nameof(Duration));
             }
         }

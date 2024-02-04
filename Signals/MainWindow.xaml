@@ -57,7 +57,9 @@
         Width="2048" Grid.Row="4">
 
             <Image Width="2048" HorizontalAlignment="Left" 
-        Source="{Binding Path=BitmapDetailed}">
+        Source="{Binding Path=BitmapDetailed}"
+                   MouseLeftButtonDown="OnFrequency"
+                   MouseRightButtonDown="OnTime">
                 <Image.ToolTip>
                     <ToolTip DataContext="{Binding PlacementTarget.Source,
                                        RelativeSource={RelativeSource Self}}">
@@ -85,7 +87,6 @@
             Grid.RowSpan="3"
         Height="512" 
         VerticalAlignment="Top" 
-                
         Width="2048" Grid.Row="4" BorderThickness="0,3,0,0" BorderBrush="Green"/>
 
 
@@ -141,13 +142,16 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="auto"/>
                 <RowDefinition Height="auto"/>
-                <RowDefinition/>
-                <RowDefinition/>
-                <RowDefinition/>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
                 <RowDefinition/>
             </Grid.RowDefinitions>
             <ListView Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Height="300"
-                      ItemsSource="{Binding Parts}">
+                      ItemsSource="{Binding Parts}"
+                      SelectedItem="{Binding SelectedPart}">
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <Label Content="{Binding Type}"/>
@@ -155,6 +159,18 @@
                 </ListView.ItemTemplate>
             </ListView>
             <Button Grid.Row="1" Grid.Column="1" Height="35">AddPart</Button>
+            <Label Grid.Row="2" Grid.Column="0" Height="35">Type</Label>
+            <TextBox Grid.Row="2" Grid.Column="1" Height="35" Text="{Binding SelectedPart.Type}"></TextBox>
+            <Label Grid.Row="3" Grid.Column="0" Height="35">start</Label>
+            <TextBox Grid.Row="3" Grid.Column="1" Height="35" Text="{Binding SelectedPart.Start}"></TextBox>
+            <Label Grid.Row="4" Grid.Column="0" Height="35">end</Label>
+            <TextBox Grid.Row="4" Grid.Column="1" Height="35" Text="{Binding SelectedPart.End}"></TextBox>
+            <Label Grid.Row="5" Grid.Column="0" Height="35">Duration</Label>
+            <TextBox Grid.Row="5" Grid.Column="1" Height="35" Text="{Binding SelectedPart.Duration, Mode=OneWay}"></TextBox>
+            <ListView Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2" Height="300"
+                      ItemsSource="{Binding SelectedPart.Frequencies, Mode=OneWay}">
+              
+            </ListView>
         </Grid>
 
     </Grid>
