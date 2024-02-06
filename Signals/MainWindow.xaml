@@ -90,17 +90,17 @@
         Width="2048" Grid.Row="4" BorderThickness="0,3,0,0" BorderBrush="Green"/>
 
 
-        <Button Content="previous" HorizontalAlignment="Left" Height="34" Grid.Row="3" Grid.Column="2" Margin="75,0,0,0" VerticalAlignment="Top" Width="103" Grid.ColumnSpan ="3"  Click="PreviousSegment"/>
+        <Button Content="previous" HorizontalAlignment="Left" Height="34" Grid.Row="3" Grid.Column="2" Margin="75,0,0,0" VerticalAlignment="Top" Width="103" Grid.ColumnSpan ="3"  Click="PreviousSegmentTop"/>
 
-        <Button Content="Next" HorizontalAlignment="Left" Height="34"  Grid.Row="3" Grid.Column="2" Margin="250,0,0,0" VerticalAlignment="Top" Width="103"  Grid.ColumnSpan ="3"  Click="NextSegment"/>
+        <Button Content="Next" HorizontalAlignment="Left" Height="34"  Grid.Row="3" Grid.Column="2" Margin="250,0,0,0" VerticalAlignment="Top" Width="103"  Grid.ColumnSpan ="3"  Click="NextSegmentTop"/>
 
 
-        <Button Content="Next" HorizontalAlignment="Left" Grid.Row="4" VerticalAlignment="Bottom" Grid.Column="2"  Width="100" Height="25" Grid.ColumnSpan ="3"  Click="NextSegment" >
+        <Button Content="Next" HorizontalAlignment="Left" Grid.Row="4" VerticalAlignment="Bottom" Grid.Column="2"  Width="100" Height="25" Grid.ColumnSpan ="3"  Click="NextSegmentBottom" >
             <Button.RenderTransform>
                 <RotateTransform CenterX="0" CenterY="0" Angle="-90" />
             </Button.RenderTransform>
         </Button>
-        <Button Content="previous" HorizontalAlignment="Left" Grid.Row="6" VerticalAlignment="Bottom" Grid.Column="2"  Width="100" Height="25" Grid.ColumnSpan ="3"  Click="PreviousSegment" >
+        <Button Content="previous" HorizontalAlignment="Left" Grid.Row="6" VerticalAlignment="Bottom" Grid.Column="2"  Width="100" Height="25" Grid.ColumnSpan ="3"  Click="PreviousSegmentBottom" >
             <Button.RenderTransform>
                 <RotateTransform CenterX="0" CenterY="0" Angle="-90" />
             </Button.RenderTransform>
@@ -147,6 +147,9 @@
                 <RowDefinition Height="auto"/>
                 <RowDefinition Height="auto"/>
                 <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
                 <RowDefinition/>
             </Grid.RowDefinitions>
             <ListView Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Height="300"
@@ -154,15 +157,19 @@
                       SelectedItem="{Binding SelectedPart}">
                 <ListView.ItemTemplate>
                     <DataTemplate>
+                        <StackPanel Orientation="Horizontal">
                         <Label Content="{Binding Type}"/>
+                        </StackPanel>
+
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
-            <Button Grid.Row="1" Grid.Column="1" Height="35">AddPart</Button>
+            <Button Grid.Row="1" Grid.Column="1" Height="35" Click="OnAddToEnd">AddPart</Button>
+            <Button Grid.Row="1" Grid.Column="0" Height="35" Click="OnDeletePart">DeleteSelected</Button>
             <Label Grid.Row="2" Grid.Column="0" Height="35">Type</Label>
             <TextBox Grid.Row="2" Grid.Column="1" Height="35" Text="{Binding SelectedPart.Type}"></TextBox>
             <Label Grid.Row="3" Grid.Column="0" Height="35">start</Label>
-            <TextBox Grid.Row="3" Grid.Column="1" Height="35" Text="{Binding SelectedPart.Start}"></TextBox>
+            <TextBox Grid.Row="3" Grid.Column="1" Height="35" Text="{Binding SelectedPart.Start, Mode=OneWay}"></TextBox>
             <Label Grid.Row="4" Grid.Column="0" Height="35">end</Label>
             <TextBox Grid.Row="4" Grid.Column="1" Height="35" Text="{Binding SelectedPart.End}"></TextBox>
             <Label Grid.Row="5" Grid.Column="0" Height="35">Duration</Label>
@@ -171,6 +178,8 @@
                       ItemsSource="{Binding SelectedPart.Frequencies, Mode=OneWay}">
               
             </ListView>
+            <Button Grid.Row="7" Grid.Column="1" Height="35" Click="ClearFrequencies">Clear</Button>
+            <Button Grid.Row="8" Grid.Column="1" Height="35" Click="SaveOverview">Save</Button>
         </Grid>
 
     </Grid>

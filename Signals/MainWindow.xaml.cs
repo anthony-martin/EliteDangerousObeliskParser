@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Drawing;
@@ -26,15 +27,17 @@ namespace Signals
         public event PropertyChangedEventHandler PropertyChanged;
         private int _bitmapWidth = 2048;
         private int _bitmapHeight = 512;
-        private int _imageSegment = 0;
+        private int _imageSegmentTop = 0;
+        private int _imageSegmentBottom = 0;
         private int _block = 50;
+
 
         private ObservableCollection<MessagePartModel> _parts;
         private MessagePartModel _selectedPart;
 
         public MainWindow()
         {
-            _parts = new ObservableCollection<MessagePartModel> { new MessagePartModel { Type="1111"}, new MessagePartModel { Type = "22222" } };
+            _parts = new ObservableCollection<MessagePartModel> { new MessagePartModel { Type="Start"}};
             _selectedPart = _parts.FirstOrDefault();
             HighRangeBoost = 1;
             OverlayAboveSement = 1400;
@@ -52,13 +55,13 @@ namespace Signals
 
             int block = _block;
             int frequencyBins = 0;
-            for (int x = 0; x < _bitmapWidth &&  x * block + block < _process.Buffer.Count; x++)
+            for (int x = 0; x < _bitmapWidth && _imageSegmentTop + x * block + block < _process.Buffer.Count; x++)
             {
                 // here we add all the blocks together
                 float[] buffer = new float[_bitmapHeight];
                 for (int y = 0; y < block; y++)
                 {
-                    var blockSegment = _process.Buffer[ x * block + y];
+                    var blockSegment = _process.Buffer[_imageSegmentTop +  x * block + y];
 
                     frequencyBins = blockSegment.Length / _bitmapHeight;
 
@@ -72,27 +75,7 @@ namespace Signals
                 }
                 for (int i = 0; i < _bitmapHeight; i++)
                 {
-                    //float power = 0;
-
-                    //float power2 = 0;
-                    //if (i >= StartOverlayIndex && OverlayAboveSement - StartOverlayIndex + i < 1024)
-                    //{
-                    //    //we want to start reading up from overlay above
-                    //    //this should be = to overlayAboveSegment when it starts and not overflow
-                    //    power2 += HighRangeBoost * Math.Abs(buffer[ i - StartOverlayIndex + OverlayAboveSement]);
-                    //}
-
-                    //{
-                    //    power += Math.Abs(buffer[i]);
-
-                    //}
-
-
-                    //bitmap.SetPixel(x, 2047 - i, System.Drawing.Color.FromArgb(255,
-                    //            Convert.ToInt32(Math.Min(255.0f, Gain * power)),
-                    //            Convert.ToInt32(Math.Min(255.0f, Gain * power2)),
-                    //            0));
-
+                    
                     float powerInverse = 0;
                     int red = 0;
                     int blue = 0;
@@ -111,7 +94,7 @@ namespace Signals
                         red = Convert.ToInt32(Math.Min(255.0f, Gain * powerInverse));
                     }
                     if( ( i == (800+ _bitmapWidth) / frequencyBins) 
-                    &&  x >= (_imageSegment / block ) &&  x <= (_imageSegment / block ) + _bitmapHeight / 2)
+                    &&  x >= (_imageSegmentBottom / block ) &&  x <= (_imageSegmentBottom / block ) + _bitmapHeight / 2)
                     {
                         blue = 0;
                         red = 255;
@@ -119,14 +102,14 @@ namespace Signals
                     }
 
                     if ((i == 800 / frequencyBins )
-                   && x >= (_imageSegment / block) && x <= (_imageSegment / block) + _bitmapHeight / 2)
+                   && x >= (_imageSegmentBottom / block) && x <= (_imageSegmentBottom / block) + _bitmapHeight / 2)
                     {
                         blue = 255;
                         red = 0;
                         green = 0;
                     }
                     if (i >= 800 / frequencyBins && i <= ((800 + _bitmapWidth) / frequencyBins) 
-                    &&  x == (_imageSegment / block))
+                    &&  x == (_imageSegmentBottom / block))
                     {
                         blue = 0;
                         red = 255;
@@ -134,7 +117,7 @@ namespace Signals
                     }
 
                     if (i >= 800 / frequencyBins && i <= ((800 + _bitmapWidth) / frequencyBins)
-                   && ( x == (_imageSegment / block) + _bitmapHeight / 2))
+                   && ( x == (_imageSegmentBottom / block) + _bitmapHeight / 2))
                     {
                         blue = 0;
                         red = 0;
@@ -155,9 +138,22 @@ namespace Signals
                 }
                 
             }
-            //bitmap = new ShapeDetection().GetShapeDetectionImage(bitmap);
-
-            //bitmap.Save(@"C:\Users\Home\Documents\Audacity\codexparts\Test.bmp");
+            
+            foreach(var part in _parts)
+            {
+                if (part.End > 0 && part.End < _imageSegmentTop + _bitmapWidth * block) 
+                {
+                    var x = part.End - _imageSegmentTop;
+                    x /= block;
+                    for (int i = 0; i < _bitmapHeight; i++)
+                    {
+                        bitmap.SetPixel(x, _bitmapHeight - 1 - i, System.Drawing.Color.FromArgb(255,
+                                        255,
+                                        0,
+                                        0));
+                    }
+                }
+            }
 
 
             var bits = bitmap.LockBits(new System.Drawing.Rectangle(0, 0, _bitmapWidth, _bitmapHeight), System.Drawing.Imaging.ImageLockMode.ReadWrite, bitmap.PixelFormat);
@@ -182,13 +178,13 @@ namespace Signals
 
             int block = _block /2;
 
-            for (int x = 0; x < _bitmapHeight && _imageSegment + x * block + block < _process.Buffer.Count; x++)
+            for (int x = 0; x < _bitmapHeight && _imageSegmentBottom + x * block + block < _process.Buffer.Count; x++)
             {
                 // here we add all the blocks together
                 float[] buffer = new float[_bitmapWidth];
                 for (int y = 0; y < block; y++)
                 {
-                    var blockSegment = _process.Buffer[_imageSegment + x * block + y];
+                    var blockSegment = _process.Buffer[_imageSegmentBottom + x * block + y];
 
                     var frequencyBins = 1;
 
@@ -233,6 +229,22 @@ namespace Signals
                     }
                 }
 
+            }
+
+            foreach (var part in _parts)
+            {
+                if (part.End > _imageSegmentBottom && part.End < _imageSegmentBottom + _bitmapHeight * block)
+                {
+                    var x = part.End - _imageSegmentBottom;
+                    x /= block;
+                    for (int i = 0; i < _bitmapWidth; i++)
+                    {
+                        bitmap.SetPixel(_bitmapWidth - 1 - i, _bitmapHeight - 1 - x, System.Drawing.Color.FromArgb(255,
+                                        255,
+                                        0,
+                                        0));
+                    }
+                }
             }
             //bitmap = new ShapeDetection().GetShapeDetectionImage(bitmap);
 
@@ -303,41 +315,54 @@ namespace Signals
         {
             var val = e.GetPosition(sender as IInputElement);
 
-            int timestamp = _imageSegment + (512 - (int)val.Y) * _block / 2;
+            int timestamp = _imageSegmentBottom + (512 - (int)val.Y) * _block / 2;
             if (_selectedPart != null)
             {
-                if(_selectedPart.Start == 0 )
-                {
-                    _selectedPart.Start = timestamp;
-                }
-                else if(_selectedPart.End != 0)
-                {
-                    _selectedPart.Start = timestamp;
-                    _selectedPart.End = 0;
-                }
-                else
-                {
-                    _selectedPart.End = timestamp;
-                }
+
+                 _selectedPart.End = timestamp;
+                Draw();
+                DrawZoomed();
             }
         }
 
-        private void PreviousSegment(object sender, RoutedEventArgs e)
+        private void PreviousSegmentTop(object sender, RoutedEventArgs e)
         {
-            if (_imageSegment > 0)
+            if (_imageSegmentTop > 0)
             {
-                _imageSegment -= _bitmapHeight * _block /4;
+                _imageSegmentTop -= _bitmapWidth * _block / 2;
+                Draw();
+                DrawZoomed();
+            }
+
+        }
+
+        private void NextSegmentTop(object sender, RoutedEventArgs e)
+        {
+            if (_imageSegmentTop + _bitmapWidth * (_block / 2) <= _process.Buffer.Count)
+            {
+                _imageSegmentTop += _bitmapWidth * _block / 2;
+                Draw();
+                DrawZoomed();
+            }
+
+        }
+
+        private void PreviousSegmentBottom(object sender, RoutedEventArgs e)
+        {
+            if (_imageSegmentBottom > 0)
+            {
+                _imageSegmentBottom -= _bitmapHeight * _block /4;
                 Draw();
                 DrawZoomed();
             }
             
         }
 
-        private void NextSegment(object sender, RoutedEventArgs e)
+        private void NextSegmentBottom(object sender, RoutedEventArgs e)
         {
-            if (_imageSegment + _bitmapHeight * (_block /4 )  <= _process.Buffer.Count)
+            if (_imageSegmentBottom + _bitmapHeight * (_block /4 )  <= _process.Buffer.Count)
             {
-                _imageSegment += _bitmapHeight * _block /4;
+                _imageSegmentBottom += _bitmapHeight * _block /4;
                 Draw();
                 DrawZoomed();
             }
@@ -368,6 +393,51 @@ namespace Signals
             DrawZoomed();
         }
 
+        private void OnAddToEnd(object sender, RoutedEventArgs e)
+        {
+            var parent = _parts.Last();
+            if (parent.End != 0)
+            {
+                var newPart = new MessagePartModel { Type = "Unknown", Parent = parent };
+                parent.Child = newPart;
+                _parts.Add(newPart);
+                SelectedPart = newPart;
+            }
+        }
+
+        private void OnDeletePart(object sender, RoutedEventArgs e)
+        {
+            var parent = _selectedPart.Parent;
+            var child = _selectedPart.Child;
+            if (parent != null)
+            {
+                parent.Child = child;
+                _selectedPart.Parent = null;
+                _selectedPart.Child = null;
+                _parts.Remove(_selectedPart);
+            }
+            if(child != null)
+            {
+                child.Parent = parent;
+            }
+
+        }
+
+        private void ClearFrequencies(object sender, RoutedEventArgs e)
+        {
+            if (_selectedPart != null)
+            {
+                _selectedPart.Frequencies.Clear();
+            }
+        }
+
+        private void SaveOverview(object sender, RoutedEventArgs e)
+        {
+            var json = JsonConvert.SerializeObject(_parts.ToArray());
+
+            File.WriteAllText(_filePath + ".json", json);
+        }
+
         protected void OnPropertyChanged([CallerMemberName] string name = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
@@ -375,13 +445,13 @@ namespace Signals
 
         private async void Button_Click_1(object sender, RoutedEventArgs e)
         {
-            _imageSegment = 0;
+            _imageSegmentBottom = 0;
             var dialog = new Microsoft.Win32.OpenFileDialog();
 
             if (true == dialog.ShowDialog())
             {
-                var fileName = dialog.FileName;
-                await ProcessFile(fileName);
+                _filePath = dialog.FileName;
+                await ProcessFile(_filePath);
             }
         }
 

@@ -1,27 +1,33 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Signals
 {
     public class MessagePartModel : INotifyPropertyChanged
     {
+        [JsonIgnore]
+        private MessagePartModel _parent;
+        [JsonIgnore]
+        private MessagePartModel _child;
+        [JsonIgnore]
         private string _type;
-        private int _start;
+        [JsonIgnore]
         private int _end;
+        [JsonIgnore]
         private TimeSpan _duration;
         private readonly ObservableCollection<int> _frequencies;
 
+        [JsonConstructor]
         public MessagePartModel()
         {
             _frequencies = new ObservableCollection<int>();
         }
 
+        [JsonProperty]
         public string Type
         { 
             get 
@@ -34,42 +40,89 @@ namespace Signals
                 OnPropertyChanged(); 
             } 
         }
+        [JsonProperty]
         public int Start 
         { 
-            get { return _start; } 
-            set 
+            get 
             {
-                _start = value;
-                
-                 SetDuration();
-                OnPropertyChanged();
+                int start = 0;
+                if (_parent != null)
+                {
+                    return _parent.End;
+                }
+                return start;
             } 
+
         }
 
+        [JsonProperty]
         public int End
         {
             get { return _end; }
             set
             {
-                _end = value;
-                
-                SetDuration();
+                if (value > Start)
+                {
+                    _end = value;
+
+                    SetDuration();
+                }
                 OnPropertyChanged();
             }
         }
 
+        [JsonIgnore]
+        public MessagePartModel Parent
+        {
+            get{ return _parent; }
+            set { _parent = value;
+                SetDuration();
+            }
+        }
+
+        [JsonIgnore]
+        public MessagePartModel Child
+        {
+            get { return _child; }
+            set
+            {
+                _child = value;
+                SetDuration();
+            }
+        }
+
+        [JsonProperty]
         public TimeSpan Duration { get { return _duration; } }
 
+        [JsonIgnore]
         public ObservableCollection<int> Frequencies { get { return _frequencies; } }
+
+        [JsonProperty]
+        private int[] FrequenciesArray 
+        { 
+            get { return _frequencies.ToArray(); 
+        }
+            set
+            {
+                foreach(var freq in value)
+                {
+                    _frequencies.Add(freq);
+                }
+            }
+        }
 
         private void SetDuration()
         {
-            var duration = _end - _start;
+            var duration = _end - Start;
             if (duration > 0)
             {
                 //magic number taken from the High Frequency plot at some point consider making it less magic
                 _duration = TimeSpan.FromMilliseconds(duration );
                 OnPropertyChanged(nameof(Duration));
+            }
+            else
+            {
+                _duration = TimeSpan.Zero;
             }
         }
 
