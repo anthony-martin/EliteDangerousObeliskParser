@@ -34,15 +34,7 @@
            
         
         Source="{Binding Path=Bitmap}">
-                    <Image.ToolTip>
-                        <ToolTip DataContext="{Binding PlacementTarget.Source,
-                                       RelativeSource={RelativeSource Self}}">
-                            <StackPanel>
-                                <TextBlock Text="{Binding PixelWidth, StringFormat=Width: {0}}"/>
-                                <TextBlock Text="{Binding PixelHeight, StringFormat=Height: {0}}"/>
-                            </StackPanel>
-                        </ToolTip>
-                    </Image.ToolTip>
+
                 </Image>
             </Border>
 
@@ -59,16 +51,9 @@
             <Image Width="2048" HorizontalAlignment="Left" 
         Source="{Binding Path=BitmapDetailed}"
                    MouseLeftButtonDown="OnFrequency"
-                   MouseRightButtonDown="OnTime">
-                <Image.ToolTip>
-                    <ToolTip DataContext="{Binding PlacementTarget.Source,
-                                       RelativeSource={RelativeSource Self}}">
-                        <StackPanel>
-                            <TextBlock Text="{Binding PixelWidth, StringFormat=Width: {0}}"/>
-                            <TextBlock Text="{Binding PixelHeight, StringFormat=Height: {0}}"/>
-                        </StackPanel>
-                    </ToolTip>
-                </Image.ToolTip>
+                   MouseRightButtonDown="OnTime"
+                   Cursor="Cross">
+
             </Image>
         </Border>
         <Border Grid.Column="2"
@@ -167,7 +152,7 @@
             <Button Grid.Row="1" Grid.Column="1" Height="35" Click="OnAddToEnd">AddPart</Button>
             <Button Grid.Row="1" Grid.Column="0" Height="35" Click="OnDeletePart">DeleteSelected</Button>
             <Label Grid.Row="2" Grid.Column="0" Height="35">Type</Label>
-            <TextBox Grid.Row="2" Grid.Column="1" Height="35" Text="{Binding SelectedPart.Type}"></TextBox>
+            <TextBox Grid.Row="2" Grid.Column="1" Height="35" Text="{Binding SelectedPart.Type, UpdateSourceTrigger=PropertyChanged}"></TextBox>
             <Label Grid.Row="3" Grid.Column="0" Height="35">start</Label>
             <TextBox Grid.Row="3" Grid.Column="1" Height="35" Text="{Binding SelectedPart.Start, Mode=OneWay}"></TextBox>
             <Label Grid.Row="4" Grid.Column="0" Height="35">end</Label>

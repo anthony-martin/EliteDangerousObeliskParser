@@ -451,7 +451,31 @@ namespace Signals
             if (true == dialog.ShowDialog())
             {
                 _filePath = dialog.FileName;
+                
+                if (File.Exists(_filePath + ".json"))
+                {
+                    _parts.Clear();
+                    var parts = JsonConvert.DeserializeObject<MessagePartModel[]>(File.ReadAllText(_filePath + ".json"));
+                    MessagePartModel previous = null;
+                    foreach(var part in parts)
+                    {
+                        if(previous != null)
+                        {
+                            previous.Child = part;
+                            part.Parent = previous;
+                        }
+                        previous = part;
+                        _parts.Add(part);
+                        
+                    }
+                }
+                else
+                {
+                    _parts.Clear();
+                    _parts.Add(new MessagePartModel { Type = "Start" });
+                }
                 await ProcessFile(_filePath);
+
             }
         }
 
