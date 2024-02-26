@@ -17,8 +17,8 @@ namespace Signals
     public class ProcessImage
     {
         private List<float[]> _fftBuffer;
-        private int _fftLength = 8196;
-        private int _fftCompexity = 13;
+        private int _fftLength = 32784;
+        private int _fftCompexity = 15;
         private int _fftLengthBytes ;
         private int _bytesPerSameple;
 

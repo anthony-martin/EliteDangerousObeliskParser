@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using ProcessingLogic;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -186,13 +187,13 @@ namespace Signals
                 {
                     var blockSegment = _process.Buffer[_imageSegmentBottom + x * block + y];
 
-                    var frequencyBins = 1;
+                    var frequencyBins = 3;
 
                     for (int z = 0; z < _bitmapWidth; z++)
                     {
                         for (int w = 0; w < frequencyBins; w++)
                         {
-                            buffer[z] += (blockSegment[800 + z * frequencyBins + w] / (float)block);
+                            buffer[z] += (blockSegment[4000 + z * frequencyBins + w] / (float)block);
                         }
                     }
                 }
@@ -305,8 +306,15 @@ namespace Signals
             var val =  e.GetPosition(sender as IInputElement);
             if(_selectedPart != null)
             {
+                FindFrequencies finder = new FindFrequencies();
+                var res = finder.FindBlock(_process.Buffer, _selectedPart.Start, _selectedPart.End, 4000, 9500);
                 //magic number is 24000/4096 which is our frequency accuracy and we should link this to values in the processor
-                _selectedPart.Frequencies.Add((int) ((800.0 + 2048 - val.X) * 5.859375));
+                foreach(var freq in res)
+                {
+                    float index = freq.Item1;
+                    index *= 1.46484375f;
+                    _selectedPart.Frequencies.Add((int)index);
+                }
             }
 
         }
