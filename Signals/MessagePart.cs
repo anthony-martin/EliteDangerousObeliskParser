@@ -20,6 +20,12 @@ namespace Signals
         [JsonIgnore]
         private TimeSpan _duration;
         private readonly ObservableCollection<int> _frequencies;
+        private readonly ObservableCollection<int> _frequenciesIndex;
+
+        private int _lineSeparation = 680;
+        private int _blockSize;
+
+        private bool _isBlock = false;
 
         [JsonConstructor]
         public MessagePartModel()
@@ -108,6 +114,25 @@ namespace Signals
                 {
                     _frequencies.Add(freq);
                 }
+            }
+        }
+
+        public int LineSeparation
+        {
+            get{ return _lineSeparation; }
+            set{
+                _lineSeparation = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public bool IsBlock
+        {
+            get{ return _isBlock; }
+            set
+            {
+                _isBlock = value;
+                OnPropertyChanged();
             }
         }
 

@@ -30,7 +30,10 @@ namespace Signals
         private int _bitmapHeight = 512;
         private int _imageSegmentTop = 0;
         private int _imageSegmentBottom = 0;
-        private int _block = 50;
+        private int _block = 4;
+        private int _hdFreqOffset = 4000;
+        private bool _blockMode = false;
+        private bool _lineMode = false;
 
 
         private ObservableCollection<MessagePartModel> _parts;
@@ -87,14 +90,15 @@ namespace Signals
 
                     powerInverse += Math.Abs(value);
 
-
-
+                    var binsBottom = 1;
+                    //set the image colour here
                     {
                         blue = Convert.ToInt32(Math.Min(255.0f, Gain * powerInverse));
                         green = Convert.ToInt32(Math.Min(255.0f, Gain * powerInverse));
                         red = Convert.ToInt32(Math.Min(255.0f, Gain * powerInverse));
                     }
-                    if( ( i == (800+ _bitmapWidth) / frequencyBins) 
+                    //override with the HD bounds after
+                    if ( ( i == (_hdFreqOffset + _bitmapWidth) / frequencyBins / binsBottom )
                     &&  x >= (_imageSegmentBottom / block ) &&  x <= (_imageSegmentBottom / block ) + _bitmapHeight / 2)
                     {
                         blue = 0;
@@ -102,14 +106,14 @@ namespace Signals
                         green = 0;
                     }
 
-                    if ((i == 800 / frequencyBins )
+                    if ((i == _hdFreqOffset / frequencyBins / binsBottom)
                    && x >= (_imageSegmentBottom / block) && x <= (_imageSegmentBottom / block) + _bitmapHeight / 2)
                     {
                         blue = 255;
                         red = 0;
                         green = 0;
                     }
-                    if (i >= 800 / frequencyBins && i <= ((800 + _bitmapWidth) / frequencyBins) 
+                    if (i >= _hdFreqOffset / frequencyBins / binsBottom && i <= ((_hdFreqOffset + _bitmapWidth) / frequencyBins  / binsBottom) 
                     &&  x == (_imageSegmentBottom / block))
                     {
                         blue = 0;
@@ -117,7 +121,7 @@ namespace Signals
                         green = 0;
                     }
 
-                    if (i >= 800 / frequencyBins && i <= ((800 + _bitmapWidth) / frequencyBins)
+                    if (i >= _hdFreqOffset / frequencyBins / binsBottom && i <= ((_hdFreqOffset + _bitmapWidth) / frequencyBins  / binsBottom)
                    && ( x == (_imageSegmentBottom / block) + _bitmapHeight / 2))
                     {
                         blue = 0;
@@ -178,6 +182,7 @@ namespace Signals
             Bitmap bitmap = new Bitmap(_bitmapWidth, _bitmapHeight);
 
             int block = _block /2;
+            var frequencyBins = 1;
 
             for (int x = 0; x < _bitmapHeight && _imageSegmentBottom + x * block + block < _process.Buffer.Count; x++)
             {
@@ -187,13 +192,12 @@ namespace Signals
                 {
                     var blockSegment = _process.Buffer[_imageSegmentBottom + x * block + y];
 
-                    var frequencyBins = 3;
-
+                    
                     for (int z = 0; z < _bitmapWidth; z++)
                     {
                         for (int w = 0; w < frequencyBins; w++)
                         {
-                            buffer[z] += (blockSegment[4000 + z * frequencyBins + w] / (float)block);
+                            buffer[z] += blockSegment[_hdFreqOffset + z * frequencyBins + w] / (float)block;
                         }
                     }
                 }
@@ -204,12 +208,10 @@ namespace Signals
                     int red = 0;
                     int blue = 0;
                     int green = 0;
-                    //for (int y = 0; y < 12; y++)
 
                     var value = buffer[i];
 
                     powerInverse += Math.Abs(value);
-
 
                     {
                         blue = Convert.ToInt32(Math.Min(255.0f, Gain * powerInverse));
@@ -247,6 +249,36 @@ namespace Signals
                     }
                 }
             }
+
+            if (_lineMode && _selectedPart != null)
+            {
+                var freq = _selectedPart.Frequencies.FirstOrDefault();
+               // int timestamp = _imageSegmentBottom + (512 - (int)val.Y) * _block / 2;
+                var start = (_selectedPart.Start - _imageSegmentBottom ) / _block * 2  ;
+                var end = Math.Min(512, (_selectedPart.End - _imageSegmentBottom) / _block * 2 );
+                if (end > start && start > 0)
+                {
+                    for (int band = 0; band < 10; band++)
+                    {
+                        var pixel = (freq / 1.46484375 - _hdFreqOffset) / frequencyBins;
+
+                        for (int i = start; i < end; i++)
+                        {
+                            if (pixel >= 0 && pixel < _bitmapWidth)
+                            {
+                                bitmap.SetPixel(_bitmapWidth - (int)pixel, _bitmapHeight - 1 - i, System.Drawing.Color.FromArgb(255,
+                                                255,
+                                                0,
+                                                0));
+                            }
+                        }
+                        
+                        freq += _selectedPart.LineSeparation ;
+                    }
+                }
+                
+            }
+
             //bitmap = new ShapeDetection().GetShapeDetectionImage(bitmap);
 
             //bitmap.Save(@"C:\Users\Home\Documents\Audacity\codexparts\Test.bmp");
@@ -309,12 +341,16 @@ namespace Signals
                 FindFrequencies finder = new FindFrequencies();
                 var res = finder.FindBlock(_process.Buffer, _selectedPart.Start, _selectedPart.End, 4000, 9500);
                 //magic number is 24000/4096 which is our frequency accuracy and we should link this to values in the processor
-                foreach(var freq in res)
+                
+                var frequency =(int) ((_hdFreqOffset + (_bitmapWidth - val.X) ) * 1.46484375);
+                _selectedPart.Frequencies.Add(frequency);
+                foreach (var freq in res)
                 {
                     float index = freq.Item1;
                     index *= 1.46484375f;
                     _selectedPart.Frequencies.Add((int)index);
                 }
+                DrawZoomed();
             }
 
         }
@@ -377,6 +413,28 @@ namespace Signals
            
         }
 
+        private void IncreaseHdFreq(object sender, RoutedEventArgs e)
+        {
+            if (_hdFreqOffset + _bitmapHeight/2 < 16000- _bitmapHeight)
+            {
+                _hdFreqOffset +=  _bitmapHeight / 2;
+                Draw();
+                DrawZoomed();
+            }
+
+        }
+
+        private void DecreaseHdFreq(object sender, RoutedEventArgs e)
+        {
+            if (_hdFreqOffset - _bitmapHeight / 2 > 0)
+            {
+                _hdFreqOffset -= _bitmapHeight / 2;
+                Draw();
+                DrawZoomed();
+            }
+
+        }
+
         public ObservableCollection<MessagePartModel> Parts
         {
             get{ return _parts; }
@@ -437,6 +495,18 @@ namespace Signals
             {
                 _selectedPart.Frequencies.Clear();
             }
+        }
+
+        private void ToggleBlockMode(object sender, RoutedEventArgs e)
+        {
+            _blockMode = !_blockMode;
+            _lineMode = false;
+        }
+
+        private void ToggleLineMode(object sender, RoutedEventArgs e)
+        {
+            _lineMode = !_lineMode;
+            _blockMode = false;
         }
 
         private void SaveOverview(object sender, RoutedEventArgs e)

@@ -40,7 +40,7 @@
 
 
     
-        <Border BorderBrush="Black" BorderThickness="2"
+        <Border
                          Grid.Column="2"
             Grid.RowSpan="3"
         Height="512" 
@@ -78,6 +78,10 @@
         <Button Content="previous" HorizontalAlignment="Left" Height="34" Grid.Row="3" Grid.Column="2" Margin="75,0,0,0" VerticalAlignment="Top" Width="103" Grid.ColumnSpan ="3"  Click="PreviousSegmentTop"/>
 
         <Button Content="Next" HorizontalAlignment="Left" Height="34"  Grid.Row="3" Grid.Column="2" Margin="250,0,0,0" VerticalAlignment="Top" Width="103"  Grid.ColumnSpan ="3"  Click="NextSegmentTop"/>
+
+        <Button Content="Increase Freq" HorizontalAlignment="Left" Height="34" Grid.Row="7" Grid.Column="2" Margin="75,0,0,0" VerticalAlignment="Top" Width="103" Grid.ColumnSpan ="3"  Click="IncreaseHdFreq"/>
+
+        <Button Content="Decrease Freq" HorizontalAlignment="Left" Height="34"  Grid.Row="7" Grid.Column="2" Margin="250,0,0,0" VerticalAlignment="Top" Width="103"  Grid.ColumnSpan ="3"  Click="DecreaseHdFreq"/>
 
 
         <Button Content="Next" HorizontalAlignment="Left" Grid.Row="4" VerticalAlignment="Bottom" Grid.Column="2"  Width="100" Height="25" Grid.ColumnSpan ="3"  Click="NextSegmentBottom" >
@@ -135,6 +139,10 @@
                 <RowDefinition Height="auto"/>
                 <RowDefinition Height="auto"/>
                 <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
                 <RowDefinition/>
             </Grid.RowDefinitions>
             <ListView Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Height="300"
@@ -159,12 +167,18 @@
             <TextBox Grid.Row="4" Grid.Column="1" Height="35" Text="{Binding SelectedPart.End}"></TextBox>
             <Label Grid.Row="5" Grid.Column="0" Height="35">Duration</Label>
             <TextBox Grid.Row="5" Grid.Column="1" Height="35" Text="{Binding SelectedPart.Duration, Mode=OneWay}"></TextBox>
-            <ListView Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2" Height="300"
+            <Label Grid.Row="6" Grid.Column="0" Height="35">Line Separation</Label>
+            <TextBox Grid.Row="6" Grid.Column="1" Height="35" Text="{Binding SelectedPart.LineSeparation, UpdateSourceTrigger=PropertyChanged}"></TextBox>
+            <Label Grid.Row="7" Grid.Column="0" Height="35">Is Block</Label>
+            <CheckBox Grid.Row="7" Grid.Column="1" Height="35" IsChecked="{Binding SelectedPart.IsBlock}"></CheckBox>
+            <ListView Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="2" Height="150"
                       ItemsSource="{Binding SelectedPart.Frequencies, Mode=OneWay}">
               
             </ListView>
-            <Button Grid.Row="7" Grid.Column="1" Height="35" Click="ClearFrequencies">Clear</Button>
-            <Button Grid.Row="8" Grid.Column="1" Height="35" Click="SaveOverview">Save</Button>
+            <Button Grid.Row="9" Grid.Column="1" Height="35" Click="ToggleBlockMode">Block</Button>
+            <Button Grid.Row="10" Grid.Column="1" Height="35" Click="ToggleLineMode">Line</Button>
+            <Button Grid.Row="9" Grid.Column="0" Height="35" Click="ClearFrequencies">Clear</Button>
+            <Button Grid.Row="10" Grid.Column="0" Height="35" Click="SaveOverview">Save</Button>
         </Grid>
 
     </Grid>

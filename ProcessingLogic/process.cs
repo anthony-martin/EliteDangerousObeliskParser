@@ -43,7 +43,7 @@ namespace Signals
                 audioFile.Volume = 1.0f;
                 //here we double the buffer for stereo as we are going to skip half the data
                 _fftLengthBytes = _fftLength * _bytesPerSameple * format.Channels;
-                int readSegment = Math.Min(_fftLengthBytes, bytesPerSecond / 1000);
+                int readSegment = Math.Min(_fftLengthBytes, bytesPerSecond / 100);
                 
 
                 var buffer = new byte[_fftLengthBytes];
@@ -248,8 +248,8 @@ namespace Signals
         public void NormaliseArray(int lowerCutoff, int divider)
         {
            // NormaliseArrayRange(0, lowerCutoff, 0.009f);
-            NormaliseArrayRange(lowerCutoff, divider, 0.009f);
-            NormaliseArrayRange(divider, _fftLength/2, 0.009f);
+            NormaliseArrayRange(lowerCutoff, divider, 0.0009f);
+            NormaliseArrayRange(divider, _fftLength/2, 0.0009f);
             foreach (var buffer in _fftBuffer)
             {
                 for (int i = 0; i < lowerCutoff; i++)
@@ -270,7 +270,7 @@ namespace Signals
             {
                 for (int i = bottom; i < top; i++)
                 {
-                    var boostedValue = Math.Abs(buffer[i] * 900000.0f);
+                    var boostedValue = Math.Abs(buffer[i] * 700000.0f);
                     if (boostedValue >= 1)
                     {
                         var temp = (float)Math.Abs(Math.Log10(boostedValue));
