@@ -23,7 +23,6 @@ namespace Signals
         private readonly ObservableCollection<int> _frequenciesIndex;
 
         private int _lineSeparation = 680;
-        private int _blockSize;
 
         private bool _isBlock = false;
 
@@ -114,6 +113,7 @@ namespace Signals
                 {
                     _frequencies.Add(freq);
                 }
+                
             }
         }
 
